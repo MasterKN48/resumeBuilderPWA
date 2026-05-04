@@ -2,9 +2,11 @@
   --bg-color: #fdfaf6;
   --text-main: #2d2d2d;
   --text-secondary: #4a4a4a;
-  --accent-color: #d86244;
+  --accent-color: #d86244; /* Sunset (Default) */
   --pill-bg: #faebe6;
   --line-color: #eddbd3;
+  --input-bg: rgba(255, 255, 255, 0.7);
+  --hover-bg: #fff9f6;
   --font-heading: 'Montserrat', sans-serif;
   --font-body: 'Inter', sans-serif;
 
@@ -17,6 +19,80 @@
   --fs-small: 13px;
   --fs-icon-md: 16px;
   --fs-icon-lg: 20px;
+}
+
+[data-theme="emerald"] {
+  --bg-color: #f7fdfb;
+  --accent-color: #059669;
+  --pill-bg: #ecfdf5;
+  --line-color: #d1fae5;
+  --hover-bg: #f0faf7;
+}
+
+[data-theme="royal"] {
+  --bg-color: #f8faff;
+  --accent-color: #2563eb;
+  --pill-bg: #eff6ff;
+  --line-color: #dbeafe;
+  --hover-bg: #f0f7ff;
+}
+
+[data-theme="midnight"] {
+  --bg-color: #f9f8ff;
+  --accent-color: #7c3aed;
+  --pill-bg: #f5f3ff;
+  --line-color: #ede9fe;
+  --hover-bg: #f5f0ff;
+}
+
+[data-theme="slate"] {
+  --bg-color: #f8fafc;
+  --accent-color: #334155;
+  --pill-bg: #f1f5f9;
+  --line-color: #e2e8f0;
+  --hover-bg: #f1f5f9;
+}
+
+[data-theme="rose"] {
+  --bg-color: #fffafb;
+  --accent-color: #be123c;
+  --pill-bg: #fff1f2;
+  --line-color: #ffe4e6;
+  --hover-bg: #fff5f6;
+}
+
+/* Dark Themes */
+[data-theme="noir"] {
+  --bg-color: #121212;
+  --text-main: #ffffff;
+  --text-secondary: #a0a0a0;
+  --accent-color: #818cf8;
+  --pill-bg: #2d2d2d;
+  --line-color: #404040;
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: #1e1e1e;
+}
+
+[data-theme="navy"] {
+  --bg-color: #0f172a;
+  --text-main: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #38bdf8;
+  --pill-bg: #1e293b;
+  --line-color: #334155;
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: #1e293b;
+}
+
+[data-theme="forest"] {
+  --bg-color: #064e3b;
+  --text-main: #ecfdf5;
+  --text-secondary: #6ee7b7;
+  --accent-color: #34d399;
+  --pill-bg: #065f46;
+  --line-color: #047857;
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: #065f46;
 }
 
 * {
@@ -42,11 +118,11 @@ body {
   display: flex;
   gap: 12px;
   padding: 12px 24px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.8) 100%);
-  backdrop-filter: blur(10px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 100px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
@@ -57,6 +133,15 @@ body {
   z-index: 1000;
   width: max-content;
   max-width: 95vw;
+  transition: all 0.3s ease;
+}
+
+[data-theme="noir"] .floating-bar,
+[data-theme="navy"] .floating-bar,
+[data-theme="forest"] .floating-bar {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .top-bar-group {
@@ -124,6 +209,28 @@ body {
 
 .action-select:hover {
   border-color: #9ca3af;
+}
+
+[data-theme="noir"] .action-select,
+[data-theme="navy"] .action-select,
+[data-theme="forest"] .action-select {
+  background-color: #334155;
+  color: white;
+  border-color: #475569;
+}
+
+[data-theme="noir"] .action-btn,
+[data-theme="navy"] .action-btn,
+[data-theme="forest"] .action-btn {
+  background-color: #334155;
+  color: #e2e8f0;
+  border-color: #475569;
+}
+
+[data-theme="noir"] .action-btn:hover,
+[data-theme="navy"] .action-btn:hover,
+[data-theme="forest"] .action-btn:hover {
+  background-color: #475569;
 }
 
 .custom-font-input {
@@ -360,21 +467,17 @@ p {
 }
 
 .skill-pill {
-  background-color: rgba(217, 108, 77, 0.08);
-  /* Light primary bg */
-  color: #000000;
-  /* Black text as requested */
-  padding: 4px 6px !important;
-  /* Reduced padding for smaller size */
+  background-color: var(--pill-bg);
+  color: var(--text-main);
+  padding: 4px 10px !important;
   border-radius: 6px;
-  border: 1px solid rgba(217, 108, 77, 0.15);
+  border: 1px solid var(--line-color);
   font-size: var(--fs-small);
-  font-weight: 400;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   transition: all 0.2s ease;
-  margin-bottom: 2px !important;
-  /* Increased bottom margin as requested */
+  margin-bottom: 4px !important;
 }
 
 /* Certifications */
@@ -430,7 +533,7 @@ p {
   font-size: inherit;
   font-weight: inherit;
   color: inherit;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: var(--input-bg);
   border: 1px dashed var(--accent-color);
   border-radius: 4px;
   padding: 2px 4px;
@@ -442,7 +545,7 @@ p {
 }
 
 .edit-input:focus {
-  background-color: white;
+  background-color: var(--bg-color);
   border: 1px solid var(--accent-color);
   box-shadow: 0 0 0 2px rgba(216, 98, 68, 0.2);
 }
@@ -463,8 +566,8 @@ textarea.edit-input {
 }
 
 .editing .relative-box:hover {
-  border-color: #eddbd3;
-  background-color: #fff9f6;
+  border-color: var(--line-color);
+  background-color: var(--hover-bg);
 }
 
 /* Item Controls */
@@ -612,8 +715,8 @@ textarea.edit-input {
 }
 
 .editing .sec-box:hover {
-  border-color: #e2e8f0;
-  background-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--line-color);
+  background-color: var(--hover-bg);
 }
 
 .section-controls {
@@ -687,28 +790,32 @@ textarea.edit-input {
 /* Print Styles */
 @media print {
   @page {
-    margin: 30mm 15mm 20mm 15mm;
-    /* Increased top margin for extra breathing room */
-    size: auto;
+    size: A4;
+    margin: 0; /* Let container handle padding for better control */
   }
 
   body {
-    background-color: var(--bg-color); /* Match resume bg to avoid white gaps on 2nd page */
+    background-color: var(--bg-color);
     padding: 0;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .hide-print,
-  .floating-bar {
+  .floating-bar,
+  .info-banner {
     display: none !important;
   }
 
   .resume-container {
     box-shadow: none;
-    margin: 0;
-    padding: 8mm 10mm 0 10mm; /* Adjusted breathing room */
-    /* Let @page handle the primary margins */
-    max-width: 100%;
+    margin: 0 auto;
+    padding: 8mm 15mm; /* Consistent 8mm top padding */
+    width: 210mm; /* Standard A4 width */
+    min-height: 297mm; /* Standard A4 height */
     border-radius: 0;
+    background-color: var(--bg-color);
   }
 
   .page-break {

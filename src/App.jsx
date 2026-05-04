@@ -5,7 +5,7 @@ import {
   GraduationCap, Star, Award, Printer, Edit3, 
   ArrowUp, ArrowDown, Trash2, Plus, Check,
   Folder, Link as LinkIcon, FilePlus,
-  Linkedin, Globe
+  Linkedin, Globe, Palette
 } from 'lucide-preact';
 
 const defaultData = {
@@ -121,6 +121,15 @@ export default function App() {
   const [customFont, setCustomFont] = useState(() => {
     return localStorage.getItem('resumeCustomFont') || '';
   });
+
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('resumeTheme') || 'sunset';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('resumeTheme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('resumeData');
@@ -644,6 +653,22 @@ export default function App() {
                 <option value="small">Small Size</option>
                 <option value="medium">Medium Size</option>
                 <option value="large">Large Size</option>
+              </select>
+
+              <select 
+                className="action-select" 
+                value={theme} 
+                onChange={e => setTheme(e.target.value)}
+              >
+                <option value="sunset">Sunset Theme</option>
+                <option value="emerald">Emerald Theme</option>
+                <option value="royal">Royal Theme</option>
+                <option value="midnight">Midnight Theme</option>
+                <option value="slate">Slate Theme</option>
+                <option value="rose">Rose Theme</option>
+                <option value="noir">Noir (Dark)</option>
+                <option value="navy">Navy (Dark)</option>
+                <option value="forest">Forest (Dark)</option>
               </select>
             </>
           )}
