@@ -4,6 +4,7 @@ This document provides context and guidelines for AI agents working on this code
 
 ## Tech Stack
 - **Core:** Preact (React-compatible)
+- **Repository:** https://github.com/MasterKN48/resumeBuilderPWA
 - **State Management:** Hooks (`useState`, `useEffect`) in `App.jsx`
 - **Styling:** Vanilla CSS in `style.css`
 - **Icons:** `lucide-preact`

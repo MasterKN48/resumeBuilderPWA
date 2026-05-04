@@ -7,6 +7,17 @@ A modern, highly customizable, and offline-capable interactive resume builder bu
 
 [**🌐 Launch App**](https://masterkn48.github.io/resumeBuilderPWA/)
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="public/1.jpg" width="45%" alt="Editor View" />
+  <img src="public/2.jpg" width="45%" alt="Print Preview" />
+</p>
+
+<p align="center">
+  <img src="public/screenshot.png" width="100%" alt="Desktop Preview" />
+</p>
+
 ## ✨ Features
 
 - **Progressive Web App (PWA):** Installs seamlessly on your local device and works offline.
