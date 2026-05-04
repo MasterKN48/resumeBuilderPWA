@@ -1,14 +1,16 @@
 {
-  "name": "resume-template",
+  "name": "resume-builder-pwa",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "author": "MasterKN48",
+  "description": "A modern, highly customizable, and offline-capable interactive resume builder PWA.",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "bun run build",
-    "deploy": "npx gh-pages -d dist"
+    "deploy": "bun x gh-pages -d dist"
   },
   "dependencies": {
     "lucide-preact": "^0.364.0",

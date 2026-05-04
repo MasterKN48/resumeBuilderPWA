@@ -1,8 +1,13 @@
-# Interactive Resume Builder PWA
+# 📄 ProResume Builder PWA
 
-A modern, highly customizable, and offline-capable interactive resume builder built with Preact and Vite. Create, edit, and print beautiful resumes natively in your browser.
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=github)](https://masterkn48.github.io/resumeBuilderPWA/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange?style=for-the-badge&logo=pwa)](https://masterkn48.github.io/resumeBuilderPWA/)
 
-## Features
+A modern, highly customizable, and offline-capable interactive resume builder built with Preact and Vite. Build your professional resume with a live preview, drag-and-drop sections, and flawless PDF export.
+
+[**🌐 Launch App**](https://masterkn48.github.io/resumeBuilderPWA/)
+
+## ✨ Features
 
 - **Progressive Web App (PWA):** Installs seamlessly on your local device and works offline.
 - **Data Persistence:** All edits are automatically saved to your browser's local storage. You never lose your progress!
