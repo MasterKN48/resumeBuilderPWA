@@ -10,24 +10,21 @@ A modern, highly customizable, and offline-capable interactive resume builder bu
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="public/1.jpg" width="45%" alt="Editor View" />
-  <img src="public/2.jpg" width="45%" alt="Print Preview" />
+  <img src="public/1.jpg" width="30%" alt="Editor View" />
+  <img src="public/2.jpg" width="30%" alt="Print Preview" />
 </p>
 
 <p align="center">
-  <img src="public/screenshot.png" width="100%" alt="Desktop Preview" />
+  <img src="public/screenshot.png" width="80%" alt="Desktop Preview" />
 </p>
 
 ## ✨ Features
 
-- **Progressive Web App (PWA):** Installs seamlessly on your local device and works offline.
-- **Data Persistence:** All edits are automatically saved to your browser's local storage. You never lose your progress!
-- **Dynamic Layout Engine:** Easily drag, drop, and rearrange entire resume sections (Experience, Education, Projects, Skills) to fit your narrative.
-- **Page Breaks:** Insert custom page breaks anywhere in the layout to flawlessly split your resume across multiple pages when printing to PDF.
-- **Markdown Highlighting:** Instantly bold keywords using lightweight Markdown-style syntax (`**highlight**`) directly in the editor.
-- **Conditional Fields:** Smartly hide unused fields (like LinkedIn, Portfolio, or specific project links) simply by leaving them blank.
-- **Typography Controls:** Scale the font sizes globally (Small, Medium, Large) right from the toolbar.
-- **Print Fidelity:** Designed from the ground up to render a perfect 1:1 PDF layout via your browser's native `Print to PDF` function.
+- **PWA & Offline:** Install natively on any device; works without internet.
+- **Dynamic Layout:** Drag & drop sections to rearrange your resume.
+- **Smart Editing:** Markdown bolding, custom page breaks, and auto-saving.
+- **Print Perfect:** 1:1 PDF fidelity with customizable margins and typography.
+- **Conditional UI:** Unused fields (LinkedIn, Portfolio) hide automatically.
 
 ## Development
 
