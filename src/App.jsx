@@ -545,12 +545,12 @@ export default function App() {
                     )}
                   </div>
                 ))}
-                {isEditMode && (
-                  <button className="add-skill-btn hide-print" onClick={() => addItem('skills')}>
-                    <Plus size={14} /> Add Skill
-                  </button>
-                )}
               </div>
+              {isEditMode && (
+                <button className="add-btn sub-btn hide-print" onClick={() => addItem('skills')} style={{marginTop: '10px'}}>
+                  <Plus size={14} /> Add Skill Item
+                </button>
+              )}
             </div>
           </section>
         );

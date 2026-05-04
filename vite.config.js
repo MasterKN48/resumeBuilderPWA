@@ -23,14 +23,28 @@ export default defineConfig({
             sizes: '1080x1920',
             type: 'image/jpeg',
             form_factor: 'narrow',
-            label: 'Resume Editor'
+            label: 'Resume Editor Mobile'
           },
           {
             src: '2.jpg',
             sizes: '1080x1920',
             type: 'image/jpeg',
             form_factor: 'narrow',
-            label: 'Print Preview'
+            label: 'Print Preview Mobile'
+          },
+          {
+            src: '1-desktop.jpg',
+            sizes: '1920x1080',
+            type: 'image/jpeg',
+            form_factor: 'wide',
+            label: 'Resume Editor Desktop'
+          },
+          {
+            src: '2-desktop.jpg',
+            sizes: '1920x1080',
+            type: 'image/jpeg',
+            form_factor: 'wide',
+            label: 'Print Preview Desktop'
           }
         ],
         icons: [

@@ -213,6 +213,23 @@ body {
   gap: 8px;
 }
 
+/* Edit Mode Spacing Improvements */
+.editing .name, 
+.editing .profession {
+  margin-bottom: 12px !important;
+}
+
+.editing .contact-info {
+  gap: 20px 30px !important;
+  margin-top: 10px;
+}
+
+.editing .contact-item {
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
 .contact-item i {
   color: var(--accent-color);
   font-size: var(--fs-body);
@@ -688,19 +705,24 @@ textarea.edit-input {
   .resume-container {
     box-shadow: none;
     margin: 0;
-    padding: 0 10mm; /* Added horizontal padding to ensure left/right margins */
+    padding: 8mm 10mm 0 10mm; /* Adjusted breathing room */
     /* Let @page handle the primary margins */
     max-width: 100%;
     border-radius: 0;
   }
 
   .page-break {
-    page-break-before: always;
-    break-before: page;
+    page-break-after: always;
+    break-after: page;
     margin: 0;
     padding: 0;
     height: 0;
     border: none;
+  }
+
+  /* Add breathing room to sections starting on a new page */
+  .page-break + .section {
+    margin-top: 8mm;
   }
 
   .edit-input {
