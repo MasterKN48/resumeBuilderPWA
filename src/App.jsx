@@ -5,7 +5,7 @@ import {
   GraduationCap, Star, Award, Printer, Edit3, 
   ArrowUp, ArrowDown, Trash2, Plus, Check,
   Folder, Link as LinkIcon, FilePlus,
-  Linkedin, Globe, Palette
+  Linkedin, Globe, Palette, GripVertical
 } from 'lucide-preact';
 
 const defaultData = {
@@ -90,9 +90,9 @@ const defaultData = {
     { id: uuidv4(), name: "Microsoft Office" }
   ],
   certifications: [
-    { id: uuidv4(), name: "Certification Name", org: "Issuing Organization", year: "2023" },
     { id: uuidv4(), name: "Certification Name", org: "Issuing Organization", year: "2021" }
-  ]
+  ],
+  contactLayout: ['email', 'phone', 'location', 'linkedin', 'portfolio']
 };
 
 const FONT_SIZES = {
@@ -109,6 +109,7 @@ const FONT_THEMES = {
 
 export default function App() {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [dragSource, setDragSource] = useState(null);
 
   const [fontSize, setFontSize] = useState(() => {
     return localStorage.getItem('resumeFontSize') || 'medium';
@@ -141,6 +142,7 @@ export default function App() {
         if (!parsed.projects) parsed.projects = defaultData.projects;
         if (parsed.linkedin === undefined) parsed.linkedin = defaultData.linkedin;
         if (parsed.portfolio === undefined) parsed.portfolio = defaultData.portfolio;
+        if (!parsed.contactLayout) parsed.contactLayout = defaultData.contactLayout;
         return parsed;
       } catch (e) {
         return defaultData;
@@ -298,6 +300,64 @@ export default function App() {
     setData(prev => ({ ...prev, layout: newLayout }));
   };
 
+  const handleDragStart = (index, type, parentIndex = null) => {
+    setDragSource({ index, type, parentIndex });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (index, type, parentIndex = null) => {
+    if (!dragSource || dragSource.type !== type || dragSource.parentIndex !== parentIndex || dragSource.index === index) return;
+    
+    setData(prev => {
+      const newData = { ...prev };
+      let list;
+      
+      if (type === 'layout') {
+        list = [...newData.layout];
+        const item = list.splice(dragSource.index, 1)[0];
+        list.splice(index, 0, item);
+        newData.layout = list;
+      } else if (type === 'contact') {
+        list = [...newData.contactLayout];
+        const item = list.splice(dragSource.index, 1)[0];
+        list.splice(index, 0, item);
+        newData.contactLayout = list;
+      } else {
+        // Experience, Projects, Education, Skills, Certifications
+        list = [...newData[type]];
+        const item = list.splice(dragSource.index, 1)[0];
+        list.splice(index, 0, item);
+        newData[type] = list;
+      }
+      
+      return newData;
+    });
+    setDragSource(null);
+  };
+
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    const userName = (data.name || 'USER')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    
+    const year = new Date().getFullYear();
+    document.title = `001-${userName}-${year}`;
+    
+    window.print();
+    
+    // Restore title after a brief delay
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 500);
+  };
+
   const parseMarkdown = (text) => {
     if (typeof text !== 'string') return text;
     const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -335,24 +395,28 @@ export default function App() {
     return <Tag className={className}>{parseMarkdown(value)}</Tag>;
   };
 
-  const Controls = ({ onUp, onDown, onDelete }) => {
+  const Controls = ({ onDelete }) => {
     if (!isEditMode) return null;
     return (
       <div className="item-controls hide-print">
-        <button onClick={onUp} title="Move Up"><ArrowUp size={16} /></button>
-        <button onClick={onDown} title="Move Down"><ArrowDown size={16} /></button>
-        <button onClick={onDelete} title="Delete" style={{color: '#ef4444'}}><Trash2 size={16} /></button>
+        <div className="flex gap-1" style={{display: 'flex', gap: '4px', alignItems: 'center'}}>
+          <div className="sec-btn drag-handle" title="Drag to reorder">
+            <GripVertical size={14} />
+          </div>
+          <button onClick={onDelete} title="Delete" style={{color: '#ef4444'}}><Trash2 size={16} /></button>
+        </div>
       </div>
     );
   };
 
-  const SectionControls = ({ index, onUp, onDown, onDelete, onAddBreak }) => {
+  const SectionControls = ({ onDelete, onAddBreak }) => {
     if (!isEditMode) return null;
     return (
       <div className="section-controls hide-print">
-        <div className="flex gap-2" style={{display: 'flex', gap: '8px'}}>
-          <button className="sec-btn" onClick={onUp} title="Move Section Up"><ArrowUp size={14} /></button>
-          <button className="sec-btn" onClick={onDown} title="Move Section Down"><ArrowDown size={14} /></button>
+        <div className="flex gap-2" style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+          <div className="sec-btn drag-handle" title="Drag to reorder">
+            <GripVertical size={14} />
+          </div>
           <button className="sec-btn" onClick={onDelete} title="Delete Section" style={{color: '#ef4444'}}><Trash2 size={14} /></button>
         </div>
         <button className="sec-btn break-btn" onClick={onAddBreak}><FilePlus size={14} /> Add Page Break Below</button>
@@ -363,16 +427,24 @@ export default function App() {
   const renderSection = (sec, index) => {
     const commonProps = {
       index,
-      onUp: () => moveSection(index, 'up'),
-      onDown: () => moveSection(index, 'down'),
       onDelete: () => deleteSection(index),
       onAddBreak: () => insertPageBreak(index)
+    };
+
+    const sectionProps = {
+      key: sec.id,
+      className: `section relative-box sec-box ${dragSource?.type === 'layout' && dragSource?.index === index ? 'dragging' : ''}`,
+      draggable: isEditMode,
+      onDragStart: () => handleDragStart(index, 'layout'),
+      onDragOver: handleDragOver,
+      onDrop: () => handleDrop(index, 'layout'),
+      onDragEnd: () => setDragSource(null)
     };
 
     switch (sec.type) {
       case 'summary':
         return (
-          <section key={sec.id} className="section relative-box sec-box">
+          <section {...sectionProps}>
             <SectionControls {...commonProps} />
             <div className="section-header">
               <span className="icon-circle"><User size={20} /></span>
@@ -386,7 +458,7 @@ export default function App() {
       
       case 'experience':
         return (
-          <section key={sec.id} className="section relative-box sec-box">
+          <section {...sectionProps}>
             <SectionControls {...commonProps} />
             <div className="section-header">
               <span className="icon-circle"><Briefcase size={20} /></span>
@@ -394,10 +466,16 @@ export default function App() {
             </div>
             <div className="section-content">
               {data.experience.map((exp, eIdx) => (
-                <div key={exp.id} className="experience-item relative-box">
+                <div 
+                  key={exp.id} 
+                  className={`experience-item relative-box ${dragSource?.type === 'experience' && dragSource?.index === eIdx ? 'dragging' : ''}`}
+                  draggable={isEditMode}
+                  onDragStart={() => handleDragStart(eIdx, 'experience')}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(eIdx, 'experience')}
+                  onDragEnd={() => setDragSource(null)}
+                >
                   <Controls 
-                    onUp={() => moveItem('experience', eIdx, 'up')}
-                    onDown={() => moveItem('experience', eIdx, 'down')}
                     onDelete={() => deleteItem('experience', eIdx)}
                   />
                   <div className="experience-header">
@@ -443,7 +521,7 @@ export default function App() {
 
       case 'projects':
         return (
-          <section key={sec.id} className="section relative-box sec-box">
+          <section {...sectionProps}>
             <SectionControls {...commonProps} />
             <div className="section-header">
               <span className="icon-circle"><Folder size={20} /></span>
@@ -451,10 +529,16 @@ export default function App() {
             </div>
             <div className="section-content">
               {data.projects.map((proj, pIdx) => (
-                <div key={proj.id} className="experience-item relative-box">
+                <div 
+                  key={proj.id} 
+                  className={`experience-item relative-box ${dragSource?.type === 'projects' && dragSource?.index === pIdx ? 'dragging' : ''}`}
+                  draggable={isEditMode}
+                  onDragStart={() => handleDragStart(pIdx, 'projects')}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(pIdx, 'projects')}
+                  onDragEnd={() => setDragSource(null)}
+                >
                   <Controls 
-                    onUp={() => moveItem('projects', pIdx, 'up')}
-                    onDown={() => moveItem('projects', pIdx, 'down')}
                     onDelete={() => deleteItem('projects', pIdx)}
                   />
                   <div className="experience-header">
@@ -497,7 +581,7 @@ export default function App() {
 
       case 'education':
         return (
-          <section key={sec.id} className="section relative-box sec-box">
+          <section {...sectionProps}>
             <SectionControls {...commonProps} />
             <div className="section-header">
               <span className="icon-circle"><GraduationCap size={20} /></span>
@@ -505,10 +589,16 @@ export default function App() {
             </div>
             <div className="section-content">
               {data.education.map((edu, eIdx) => (
-                <div key={edu.id} className="education-item relative-box">
+                <div 
+                  key={edu.id} 
+                  className={`education-item relative-box ${dragSource?.type === 'education' && dragSource?.index === eIdx ? 'dragging' : ''}`}
+                  draggable={isEditMode}
+                  onDragStart={() => handleDragStart(eIdx, 'education')}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(eIdx, 'education')}
+                  onDragEnd={() => setDragSource(null)}
+                >
                   <Controls 
-                    onUp={() => moveItem('education', eIdx, 'up')}
-                    onDown={() => moveItem('education', eIdx, 'down')}
                     onDelete={() => deleteItem('education', eIdx)}
                   />
                   <div className="experience-header">
@@ -533,7 +623,7 @@ export default function App() {
 
       case 'skills':
         return (
-          <section key={sec.id} className="section relative-box sec-box">
+          <section {...sectionProps}>
             <SectionControls {...commonProps} />
             <div className="section-header">
               <span className="icon-circle"><Star size={20} /></span>
@@ -542,7 +632,15 @@ export default function App() {
             <div className="section-content">
               <div className="skills-list">
                 {data.skills.map((skill, sIdx) => (
-                  <div key={skill.id} className="skill-pill relative-box">
+                  <div 
+                    key={skill.id} 
+                    className={`skill-pill relative-box ${dragSource?.type === 'skills' && dragSource?.index === sIdx ? 'dragging' : ''}`}
+                    draggable={isEditMode}
+                    onDragStart={() => handleDragStart(sIdx, 'skills')}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(sIdx, 'skills')}
+                    onDragEnd={() => setDragSource(null)}
+                  >
                     <EditableText 
                       value={skill.name} 
                       onChange={(val) => handleArrayChange('skills', sIdx, 'name', val)} 
@@ -566,7 +664,7 @@ export default function App() {
 
       case 'certifications':
         return (
-          <section key={sec.id} className="section relative-box sec-box">
+          <section {...sectionProps}>
             <SectionControls {...commonProps} />
             <div className="section-header">
               <span className="icon-circle"><Award size={20} /></span>
@@ -575,10 +673,16 @@ export default function App() {
             <div className="section-content">
               <ul className="bullet-list certifications-list">
                 {data.certifications.map((cert, cIdx) => (
-                  <li key={cert.id} className="relative-box cert-item">
+                  <li 
+                    key={cert.id} 
+                    className={`relative-box cert-item ${dragSource?.type === 'certifications' && dragSource?.index === cIdx ? 'dragging' : ''}`}
+                    draggable={isEditMode}
+                    onDragStart={() => handleDragStart(cIdx, 'certifications')}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(cIdx, 'certifications')}
+                    onDragEnd={() => setDragSource(null)}
+                  >
                     <Controls 
-                      onUp={() => moveItem('certifications', cIdx, 'up')}
-                      onDown={() => moveItem('certifications', cIdx, 'down')}
                       onDelete={() => deleteItem('certifications', cIdx)}
                     />
                     <EditableText value={cert.name} onChange={(val) => handleArrayChange('certifications', cIdx, 'name', val)} />
@@ -600,7 +704,7 @@ export default function App() {
       
       case 'pageBreak':
         return (
-          <div key={sec.id} className="page-break relative-box sec-box">
+          <div {...sectionProps} className={`page-break relative-box sec-box ${dragSource?.type === 'layout' && dragSource?.index === index ? 'dragging' : ''}`}>
             <SectionControls {...commonProps} />
             <div className="page-break-indicator hide-print">
               ----- Page Break -----
@@ -686,7 +790,7 @@ export default function App() {
           >
             {isEditMode ? <><Check size={16} /> Finish Editing</> : <><Edit3 size={16} /> Edit Resume</>}
           </button>
-          <button className="action-btn" onClick={() => window.print()}>
+          <button className="action-btn" onClick={handlePrint}>
             <Printer size={16} /> Print
           </button>
         </div>
@@ -709,51 +813,49 @@ export default function App() {
           <EditableText tag="h1" className="name" value={data.name} onChange={(val) => handleChange('name', val)} />
           <EditableText tag="h2" className="profession" value={data.profession} onChange={(val) => handleChange('profession', val)} />
           
-          <div className="contact-info" style={{flexWrap: 'wrap'}}>
-            
-            {(isEditMode || data.email) && (
-              <div className="contact-item">
-                <Mail size={16} color="var(--accent-color)" />
-                <EditableText value={data.email} onChange={(val) => handleChange('email', val)} placeholder="Email" />
-                {isEditMode && <button className="clear-btn hide-print" onClick={() => handleChange('email', '')}><Trash2 size={12} /></button>}
-              </div>
-            )}
-            
-            {(isEditMode || data.phone) && <div className="contact-separator"></div>}
-            {(isEditMode || data.phone) && (
-              <div className="contact-item">
-                <Phone size={16} color="var(--accent-color)" />
-                <EditableText value={data.phone} onChange={(val) => handleChange('phone', val)} placeholder="Phone" />
-                {isEditMode && <button className="clear-btn hide-print" onClick={() => handleChange('phone', '')}><Trash2 size={12} /></button>}
-              </div>
-            )}
-            
-            {(isEditMode || data.location) && <div className="contact-separator"></div>}
-            {(isEditMode || data.location) && (
-              <div className="contact-item">
-                <MapPin size={16} color="var(--accent-color)" />
-                <EditableText value={data.location} onChange={(val) => handleChange('location', val)} placeholder="Location" />
-                {isEditMode && <button className="clear-btn hide-print" onClick={() => handleChange('location', '')}><Trash2 size={12} /></button>}
-              </div>
-            )}
-
-            {(isEditMode || data.linkedin) && <div className="contact-separator"></div>}
-            {(isEditMode || data.linkedin) && (
-              <div className="contact-item">
-                <Linkedin size={16} color="var(--accent-color)" />
-                <EditableText value={data.linkedin} onChange={(val) => handleChange('linkedin', val)} placeholder="LinkedIn URL" />
-                {isEditMode && <button className="clear-btn hide-print" onClick={() => handleChange('linkedin', '')}><Trash2 size={12} /></button>}
-              </div>
-            )}
-
-            {(isEditMode || data.portfolio) && <div className="contact-separator"></div>}
-            {(isEditMode || data.portfolio) && (
-              <div className="contact-item">
-                <Globe size={16} color="var(--accent-color)" />
-                <EditableText value={data.portfolio} onChange={(val) => handleChange('portfolio', val)} placeholder="Portfolio URL" />
-                {isEditMode && <button className="clear-btn hide-print" onClick={() => handleChange('portfolio', '')}><Trash2 size={12} /></button>}
-              </div>
-            )}
+          <div className="contact-info" style={{flexWrap: 'wrap', gap: '10px 15px'}}>
+            {data.contactLayout.map((key, cIdx) => {
+              const value = data[key];
+              if (!isEditMode && !value) return null;
+              
+              const icons = {
+                email: <Mail size={16} color="var(--accent-color)" />,
+                phone: <Phone size={16} color="var(--accent-color)" />,
+                location: <MapPin size={16} color="var(--accent-color)" />,
+                linkedin: <Linkedin size={16} color="var(--accent-color)" />,
+                portfolio: <Globe size={16} color="var(--accent-color)" />
+              };
+              
+              return (
+                <div 
+                  key={key} 
+                  className={`contact-item relative-box ${dragSource?.type === 'contact' && dragSource?.index === cIdx ? 'dragging' : ''}`}
+                  draggable={isEditMode}
+                  onDragStart={() => handleDragStart(cIdx, 'contact')}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(cIdx, 'contact')}
+                  onDragEnd={() => setDragSource(null)}
+                  style={{display: 'flex', alignItems: 'center', gap: '8px'}}
+                >
+                  {isEditMode && (
+                    <div className="drag-handle-mini" style={{cursor: 'grab', display: 'flex', alignItems: 'center', opacity: 0.4}}>
+                      <GripVertical size={12} />
+                    </div>
+                  )}
+                  {icons[key]}
+                  <EditableText 
+                    value={value} 
+                    onChange={(val) => handleChange(key, val)} 
+                    placeholder={key.charAt(0).toUpperCase() + key.slice(1)} 
+                  />
+                  {isEditMode && (
+                    <button className="clear-btn hide-print" onClick={() => handleChange(key, '')}>
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </header>
 

@@ -844,3 +844,22 @@ textarea.edit-input {
     print-color-adjust: exact !important;
   }
 }
+/* Drag and Drop Styles */
+.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--accent-color) !important;
+  background-color: var(--hover-bg) !important;
+}
+
+.drag-handle {
+  cursor: grab !important;
+}
+
+.drag-handle:active {
+  cursor: grabbing !important;
+}
+
+.section.dragging {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transform: scale(0.99);
+}
