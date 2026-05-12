@@ -3,17 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ProResume | Modern Resume Builder</title>
+    <title>PocketResume | Instant Offline Resume Builder</title>
     <meta
       name="description"
-      content="A professional, highly customizable, and offline-capable interactive resume builder."
+      content="Keep your resume in your pocket. Modify anytime, anywhere, and share instantly. No more complex resume apps or privacy concerns."
     />
-    <meta name="theme-color" content="#d86244" />
+    <meta name="theme-color" content="#2d2d2d" />
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="shortcut icon" href="favicon.ico" />
+
+    <meta name="keywords" content="PocketResume, resume builder, AI resume, offline resume, PWA, resume management, professional resume, AI chat, resume prefilling, PDF export, instant resume" />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://masterkn48.github.io/resumeBuilderPWA/" />
+    <meta property="og:title" content="PocketResume | Instant Offline Resume Builder" />
+    <meta property="og:description" content="Easy, instant resume management with full offline capabilities. AI prefilling and premium designs." />
+    <meta property="og:image" content="https://masterkn48.github.io/resumeBuilderPWA/1-desktop.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="PocketResume | Instant Offline Resume Builder" />
+    <meta property="twitter:description" content="Easy, instant resume management with full offline capabilities. AI prefilling and premium designs." />
+    <meta property="twitter:image" content="https://masterkn48.github.io/resumeBuilderPWA/1-desktop.jpg" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -22,9 +36,59 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "PocketResume",
+      "operatingSystem": "All",
+      "applicationCategory": "BusinessApplication",
+      "description": "Easy, instant resume management with full offline capabilities. Features AI prefilling and premium designs.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0"
+      },
+      "featureList": [
+        "AI Resume Prefilling",
+        "AI Chat for Content Optimization",
+        "Full Offline Support",
+        "Progressive Web App (PWA)",
+        "Premium Layouts (Liquid Metal, Cinematic Grid)",
+        "Flawless PDF Export"
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Hidden SEO Content for Crawlers -->
+    <section style="display: none;" aria-hidden="true">
+        <h1>About PocketResume</h1>
+        <p>Keep your resume in your pocket. PocketResume is a premium Progressive Web App (PWA) that lets you modify your professional profile anytime, anywhere, and share it instantly. We've eliminated the complexity of traditional resume apps and removed all privacy concerns by keeping your data entirely on your device.</p>
+        
+        <h2>Advanced AI Features</h2>
+        <p>PocketResume leverages smart AI algorithms to streamline the resume-building process:</p>
+        <ul>
+          <li><strong>AI Prefilling:</strong> Instantly populate your entire profile by uploading any existing resume or pasting raw LinkedIn data. Our smart parser extracts experience, skills, and contact info with 99% accuracy.</li>
+          <li><strong>AI Chat Assistant:</strong> Use our integrated AI chat to rewrite job descriptions, optimize for specific ATS (Applicant Tracking Systems), and get real-time feedback on your professional summary.</li>
+        </ul>
+
+        <h2>Premium Design & UX</h2>
+        <p>Unlike generic builders, PocketResume offers a cinematic user interface:</p>
+        <ul>
+          <li><strong>Liquid Metal UI:</strong> Floating toolbars with animated multi-color border effects.</li>
+          <li><strong>Perspective Grid Background:</strong> A 3D cinematic background that provides a modern, expansive feel.</li>
+          <li><strong>Information Density:</strong> Optimized layouts that prioritize content over decorative icons, ensuring your resume remains professional and clear.</li>
+        </ul>
+
+        <h2>Privacy & Performance</h2>
+        <p>As a PWA, PocketResume works entirely in your browser. Your data never leaves your device, providing maximum privacy and lightning-fast performance even when you are offline.</p>
+      </article>
+    </section>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

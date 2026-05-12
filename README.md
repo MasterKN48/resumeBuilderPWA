@@ -1,9 +1,9 @@
-# 📄 ProResume Builder PWA
+# 📄 PocketResume Builder PWA
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=github)](https://masterkn48.github.io/resumeBuilderPWA/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange?style=for-the-badge&logo=pwa)](https://masterkn48.github.io/resumeBuilderPWA/)
 
-A modern, highly customizable, and offline-capable interactive resume builder built with Preact and Vite. Build your professional resume with a live preview, drag-and-drop sections, and flawless PDF export.
+Easy, instant resume management with full offline capabilities. Build your professional resume with a live preview, drag-and-drop sections, and flawless PDF export.
 
 [**🌐 Launch App**](https://masterkn48.github.io/resumeBuilderPWA/)
 
