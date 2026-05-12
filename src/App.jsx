@@ -12,6 +12,9 @@ import {
   HelpCircle,
   Palette,
   Download,
+  Layout,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-preact";
 
 const defaultData = {
@@ -165,26 +168,40 @@ export default function App() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isStandalone) return;
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    
+    // If already in standalone mode or dismissed permanently, don't even setup listeners
+    if (isStandalone || localStorage.getItem("pwaInstalled") === "true" || localStorage.getItem("pwaInstallDismissed") === "true") {
+      return;
+    }
 
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      // Optional: show immediately if event fires? 
+      // For now, keep the 30s delay but ensure we have the prompt
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+      localStorage.setItem("pwaInstalled", "true");
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
-    // Show banner after 30s if not dismissed
     const timer = setTimeout(() => {
-      if (!sessionStorage.getItem("pwaInstallDismissed") && !isStandalone) {
+      if (!localStorage.getItem("pwaInstallDismissed") && 
+          !localStorage.getItem("pwaInstalled") && 
+          !isStandalone) {
         setShowInstallBanner(true);
       }
     }, 30000);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
       clearTimeout(timer);
     };
   }, []);
@@ -197,14 +214,16 @@ export default function App() {
       setDeferredPrompt(null);
     } else {
       // Fallback for when event hasn't fired or is unavailable
-      alert("To install PocketResume, please use your browser's 'Add to Home Screen' or 'Install' menu option.");
+      alert(
+        "To install PocketResume, please use your browser's 'Add to Home Screen' or 'Install' menu option.",
+      );
     }
     setShowInstallBanner(false);
   };
 
   const dismissInstall = () => {
     setShowInstallBanner(false);
-    sessionStorage.setItem("pwaInstallDismissed", "true");
+    localStorage.setItem("pwaInstallDismissed", "true");
   };
 
   const [fontSize, setFontSize] = useState(() => {
@@ -221,6 +240,10 @@ export default function App() {
 
   const [theme, setTheme] = useState(() => {
     return "slate";
+  });
+
+  const [template, setTemplate] = useState(() => {
+    return localStorage.getItem("resumeTemplate") || "classic";
   });
 
   useEffect(() => {
@@ -313,6 +336,34 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("resumeCustomFont", customFont);
   }, [customFont]);
+
+  useEffect(() => {
+    localStorage.setItem("resumeTemplate", template);
+  }, [template]);
+
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe || isRightSwipe) {
+      setTemplate((prev) => (prev === "classic" ? "modern" : "classic"));
+    }
+  };
 
   const handleChange = (key, value) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -1231,138 +1282,259 @@ export default function App() {
         </div>
       </div>
 
-      <div
-        className={`resume-container ${isEditMode ? "editing" : ""}`}
-        style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
-      >
-        <header className="header relative-box sec-box">
-          <EditableText
-            tag="h1"
-            className="name"
-            value={data.name}
-            onChange={(val) => handleChange("name", val)}
-          />
-          {data.showProfession ? (
+      {/* Wrapper for Side Arrows and Resume */}
+      <div className="resume-wrapper">
+        <button
+          className="template-nav-btn prev-btn hide-print"
+          onClick={() =>
+            setTemplate((prev) => (prev === "classic" ? "modern" : "classic"))
+          }
+          title="Previous Template"
+        >
+          <ChevronLeft size={32} />
+        </button>
+
+        <button
+          className="template-nav-btn next-btn hide-print"
+          onClick={() =>
+            setTemplate((prev) => (prev === "classic" ? "modern" : "classic"))
+          }
+          title="Next Template"
+        >
+          <ChevronRight size={32} />
+        </button>
+
+        <div className="resume-slider-viewport">
+          <div className={`resume-slider template-active-${template}`}>
+            {/* Classic Slide */}
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                position: "relative",
-              }}
+              className={`resume-slide ${template === "classic" ? "active" : "inactive"}`}
             >
-              <EditableText
-                tag="h2"
-                className="profession"
-                value={data.profession}
-                onChange={(val) => handleChange("profession", val)}
-              />
-              {isEditMode && (
-                <button
-                  className="clear-btn hide-print"
-                  onClick={() => handleChange("showProfession", false)}
-                  style={{
-                    padding: "4px",
-                    color: "#ef4444",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                  title="Remove Profession"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
-            </div>
-          ) : (
-            isEditMode && (
-              <button
-                className="sec-btn hide-print"
-                onClick={() => handleChange("showProfession", true)}
-                style={{
-                  fontSize: "12px",
-                  padding: "4px 8px",
-                  marginBottom: "15px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                }}
+              <div
+                className={`resume-container template-classic ${isEditMode ? "editing" : ""}`}
+                style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
               >
-                <Plus size={14} /> Add Profession
-              </button>
-            )
-          )}
-
-          <div
-            className="contact-info"
-            style={{ flexWrap: "wrap", gap: "10px 15px" }}
-          >
-            {data.contactLayout.map((key, cIdx) => {
-              const value = data[key];
-              if (!isEditMode && !value) return null;
-
-              const labels = {
-                email: "Email: ",
-                phone: "Phone: ",
-                location: "Location: ",
-                linkedin: "LinkedIn: ",
-                portfolio: "Portfolio: ",
-              };
-
-              return (
-                <div
-                  key={key}
-                  className={`contact-item relative-box ${dragSource?.type === "contact" && dragSource?.index === cIdx ? "dragging" : ""}`}
-                  draggable={isEditMode}
-                  onDragStart={() => handleDragStart(cIdx, "contact")}
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDrop(cIdx, "contact")}
-                  onDragEnd={() => setDragSource(null)}
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  {isEditMode && (
+                <header className="header relative-box sec-box">
+                  <EditableText
+                    tag="h1"
+                    className="name"
+                    value={data.name}
+                    onChange={(val) => handleChange("name", val)}
+                  />
+                  {data.showProfession ? (
                     <div
-                      className="drag-handle-mini"
                       style={{
-                        cursor: "grab",
                         display: "flex",
                         alignItems: "center",
-                        opacity: 0.4,
+                        gap: "10px",
+                        position: "relative",
                       }}
                     >
-                      <GripVertical size={12} />
+                      <EditableText
+                        tag="h2"
+                        className="profession"
+                        value={data.profession}
+                        onChange={(val) => handleChange("profession", val)}
+                      />
+                      {isEditMode && (
+                        <button
+                          className="clear-btn hide-print"
+                          onClick={() => handleChange("showProfession", false)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
+                  ) : (
+                    isEditMode && (
+                      <button
+                        className="sec-btn hide-print"
+                        onClick={() => handleChange("showProfession", true)}
+                      >
+                        <Plus size={14} /> Add Profession
+                      </button>
+                    )
                   )}
-                  <span
-                    style={{
-                      fontWeight: "600",
-                      fontSize: "0.9em",
-                      color: "var(--text-secondary)",
-                    }}
+                  <div
+                    className="contact-info"
+                    style={{ flexWrap: "wrap", gap: "10px 15px" }}
                   >
-                    {labels[key]}
-                  </span>
-                  <EditableText
-                    value={value}
-                    onChange={(val) => handleChange(key, val)}
-                    placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                  />
-                  {isEditMode && (
-                    <button
-                      className="clear-btn hide-print"
-                      onClick={() => handleChange(key, "")}
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </header>
+                    {data.contactLayout.map((key, cIdx) => {
+                      const value = data[key];
+                      if (!isEditMode && !value) return null;
+                      const labels = {
+                        email: "Email: ",
+                        phone: "Phone: ",
+                        location: "Location: ",
+                        linkedin: "LinkedIn: ",
+                        portfolio: "Portfolio: ",
+                      };
+                      return (
+                        <div
+                          key={key}
+                          className={`contact-item relative-box ${dragSource?.type === "contact" && dragSource?.index === cIdx ? "dragging" : ""}`}
+                          draggable={isEditMode}
+                          onDragStart={() => handleDragStart(cIdx, "contact")}
+                          onDragOver={handleDragOver}
+                          onDrop={() => handleDrop(cIdx, "contact")}
+                          onDragEnd={() => setDragSource(null)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          {isEditMode && (
+                            <div
+                              className="drag-handle-mini"
+                              style={{
+                                cursor: "grab",
+                                display: "flex",
+                                alignItems: "center",
+                                opacity: 0.4,
+                              }}
+                            >
+                              <GripVertical size={12} />
+                            </div>
+                          )}
+                          <span
+                            style={{
+                              fontWeight: "600",
+                              fontSize: "0.9em",
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            {labels[key]}
+                          </span>
+                          <EditableText
+                            value={value}
+                            onChange={(val) => handleChange(key, val)}
+                            placeholder={
+                              key.charAt(0).toUpperCase() + key.slice(1)
+                            }
+                          />
+                          {isEditMode && (
+                            <button
+                              className="clear-btn hide-print"
+                              onClick={() => handleChange(key, "")}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </header>
+                {data.layout.map((sec, index) => renderSection(sec, index))}
+              </div>
+            </div>
 
-        {data.layout.map((sec, index) => renderSection(sec, index))}
+            {/* Modern Slide */}
+            <div
+              className={`resume-slide ${template === "modern" ? "active" : "inactive"}`}
+            >
+              <div
+                className={`resume-container template-modern ${isEditMode ? "editing" : ""}`}
+                style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              >
+                <div className="modern-layout">
+                  <aside className="modern-sidebar">
+                    <div className="modern-sidebar-top">
+                      <EditableText
+                        tag="h1"
+                        className="modern-name"
+                        value={data.name}
+                        onChange={(val) => handleChange("name", val)}
+                      />
+                      <EditableText
+                        tag="h2"
+                        className="modern-profession"
+                        value={data.profession}
+                        onChange={(val) => handleChange("profession", val)}
+                      />
+                    </div>
+                    <div className="modern-contact-section">
+                      <h3 className="modern-sidebar-title">Contact</h3>
+                      <div className="modern-contact-list">
+                        {data.contactLayout.map((key) => {
+                          const value = data[key];
+                          if (!isEditMode && !value) return null;
+                          const labels = {
+                            email: "Email",
+                            phone: "Phone",
+                            location: "Location",
+                            linkedin: "LinkedIn",
+                            portfolio: "Portfolio",
+                          };
+                          return (
+                            <div key={key} className="modern-contact-item">
+                              <span className="modern-contact-label">
+                                {labels[key]}
+                              </span>
+                              <EditableText
+                                className="modern-contact-value"
+                                value={value}
+                                onChange={(val) => handleChange(key, val)}
+                                placeholder={labels[key]}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {data.layout
+                      .filter(
+                        (s) =>
+                          s.type === "skills" || s.type === "certifications",
+                      )
+                      .map((sec) => (
+                        <div key={sec.id} className="modern-sidebar-section">
+                          <h3 className="modern-sidebar-title">
+                            {sec.type === "skills"
+                              ? data.headings.skills
+                              : data.headings.certifications}
+                          </h3>
+                          {renderSection(sec, data.layout.indexOf(sec))}
+                        </div>
+                      ))}
+                  </aside>
+                  <main className="modern-main-content">
+                    {data.layout
+                      .filter(
+                        (s) =>
+                          s.type !== "skills" && s.type !== "certifications",
+                      )
+                      .map((sec) =>
+                        renderSection(sec, data.layout.indexOf(sec)),
+                      )}
+                  </main>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div className="template-indicator hide-print">
+        <div
+          className={`indicator-dot ${template === "classic" ? "active" : ""}`}
+          onClick={() => setTemplate("classic")}
+          style={{ cursor: "pointer" }}
+        ></div>
+        <div
+          className={`indicator-dot ${template === "modern" ? "active" : ""}`}
+          onClick={() => setTemplate("modern")}
+          style={{ cursor: "pointer" }}
+        ></div>
+      </div>
+
       {showInstallBanner && (
         <div className="install-banner hide-print">
           <div className="install-content">
@@ -1372,12 +1544,18 @@ export default function App() {
               </div>
               <div className="install-text">
                 <h4>Install PocketResume</h4>
-                <p>Keep your resume in your pocket. Modify anytime, anywhere.</p>
+                <p>
+                  Keep your resume in your pocket. Modify anytime, anywhere.
+                </p>
               </div>
             </div>
             <div className="install-actions">
-              <button className="install-btn" onClick={handleInstallClick}>Install Now</button>
-              <button className="dismiss-btn" onClick={dismissInstall}>Maybe Later</button>
+              <button className="install-btn" onClick={handleInstallClick}>
+                Install Now
+              </button>
+              <button className="dismiss-btn" onClick={dismissInstall}>
+                Maybe Later
+              </button>
             </div>
           </div>
         </div>

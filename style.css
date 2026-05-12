@@ -1250,9 +1250,11 @@ textarea.edit-input {
     right: 20px;
     width: auto;
   }
+
   .action-btn::after {
     display: none !important;
   }
+
   .floating-bar {
     bottom: 16px;
     gap: 16px;
@@ -1316,4 +1318,296 @@ textarea.edit-input {
 .section.dragging {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   transform: scale(0.99);
+}
+
+/* Modern Template Styles */
+.template-modern {
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modern-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 1100px;
+  /* A4-ish ratio */
+  background: white;
+}
+
+.modern-sidebar {
+  background-color: var(--pill-bg);
+  padding: 40px 30px;
+  border-right: 1px solid var(--line-color);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.modern-sidebar-top {
+  margin-bottom: 20px;
+}
+
+.modern-name {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modern-profession {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.modern-sidebar-title {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-main);
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid var(--accent-color);
+  width: fit-content;
+}
+
+.modern-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modern-contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modern-contact-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.modern-contact-value {
+  font-size: 12px;
+  color: var(--text-main);
+  word-break: break-all;
+}
+
+.modern-main-content {
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Override Classic Section Styles for Modern */
+.template-modern .section-header {
+  border-bottom: 1.5px solid var(--line-color);
+  margin-bottom: 15px;
+}
+
+.template-modern .section-title {
+  font-size: 16px;
+  letter-spacing: 1.5px;
+}
+
+.template-modern .experience-header {
+  margin-bottom: 4px;
+}
+
+.template-modern .job-title {
+  font-size: 14px;
+  color: var(--accent-color);
+}
+
+.template-modern .skills-list {
+  gap: 8px;
+}
+
+.template-modern .skill-pill {
+  background: white;
+  padding: 3px 8px !important;
+  font-size: 11px;
+}
+
+/* Animations for switching */
+.resume-container {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* Swipe Indicator Dots */
+.template-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line-color);
+  transition: all 0.3s ease;
+}
+
+.indicator-dot.active {
+  background: var(--accent-color);
+  transform: scale(1.2);
+}
+
+/* Responsive Modern */
+@media (max-width: 768px) {
+  .modern-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .modern-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line-color);
+    padding: 30px;
+  }
+
+  .modern-main-content {
+    padding: 30px;
+  }
+}
+
+/* Print Overrides for Modern */
+@media print {
+  .template-modern {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .modern-layout {
+    display: grid !important;
+    grid-template-columns: 240px 1fr !important;
+  }
+
+  .modern-sidebar {
+    background-color: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Template Navigation Buttons */
+.resume-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.template-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  background: white;
+  border: 1px solid var(--line-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  color: var(--accent-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.resume-wrapper:hover .template-nav-btn {
+  opacity: 1;
+}
+
+.prev-btn {
+  left: -80px;
+}
+
+.next-btn {
+  right: -80px;
+}
+
+.template-nav-btn:hover {
+  background: var(--accent-color);
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+@media (max-width: 1100px) {
+  .template-nav-btn {
+    display: none;
+    /* Hide on small screens or narrow windows */
+  }
+}
+
+/* Smooth Template Transitions */
+.resume-slider-viewport {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  border-radius: 12px;
+}
+
+.resume-slider {
+  display: flex;
+  width: 200%;
+  /* Two templates side-by-side */
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+}
+
+.resume-slider.template-active-classic {
+  transform: translateX(0%);
+}
+
+.resume-slider.template-active-modern {
+  transform: translateX(-50%);
+}
+
+.resume-slide {
+  width: 50%;
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.resume-slide.inactive {
+  opacity: 0.3;
+  transform: scale(0.98);
+  pointer-events: none;
+  filter: blur(2px);
+}
+
+.resume-slide.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  filter: blur(0);
+}
+
+/* Ensure container styles don't conflict with slider */
+.resume-container {
+  margin: 0 !important;
+  /* Slider handles centering */
+  width: 100% !important;
 }
