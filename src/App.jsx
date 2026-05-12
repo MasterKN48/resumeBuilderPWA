@@ -15,6 +15,7 @@ import {
   Layout,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-preact";
 
 const defaultData = {
@@ -168,18 +169,22 @@ export default function App() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-    
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
     // If already in standalone mode or dismissed permanently, don't even setup listeners
-    if (isStandalone || localStorage.getItem("pwaInstalled") === "true" || localStorage.getItem("pwaInstallDismissed") === "true") {
+    if (
+      isStandalone ||
+      localStorage.getItem("pwaInstalled") === "true" ||
+      localStorage.getItem("pwaInstallDismissed") === "true"
+    ) {
       return;
     }
 
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Optional: show immediately if event fires? 
-      // For now, keep the 30s delay but ensure we have the prompt
     };
 
     const handleAppInstalled = () => {
@@ -192,15 +197,26 @@ export default function App() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     const timer = setTimeout(() => {
-      if (!localStorage.getItem("pwaInstallDismissed") && 
-          !localStorage.getItem("pwaInstalled") && 
-          !isStandalone) {
+      const lastShown = localStorage.getItem("pwaInstallLastShown");
+      const now = Date.now();
+      const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
+
+      if (
+        !localStorage.getItem("pwaInstallDismissed") &&
+        !localStorage.getItem("pwaInstalled") &&
+        !isStandalone &&
+        (!lastShown || now - parseInt(lastShown) > THREE_DAYS)
+      ) {
         setShowInstallBanner(true);
+        localStorage.setItem("pwaInstallLastShown", now.toString());
       }
     }, 30000);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
       clearTimeout(timer);
     };
@@ -1271,6 +1287,14 @@ export default function App() {
               </div>
             </>
           )}
+
+          <button
+            className="action-btn"
+            title="AI Chat Bot (Coming Soon)"
+            style={{ color: "var(--accent-color)" }}
+          >
+            <Sparkles size={20} />
+          </button>
 
           <button
             className="action-btn"

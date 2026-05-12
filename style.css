@@ -115,6 +115,13 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 20px 10px 100px 10px;
+  }
 }
 
 .perspective-grid {
@@ -512,6 +519,7 @@ body {
   padding: 40px 50px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   border-radius: 12px;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -775,7 +783,7 @@ p {
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .resume-container {
-    padding: 30px;
+    padding: 25px 20px;
   }
 
   .contact-info {
@@ -1064,34 +1072,75 @@ textarea.edit-input {
   @page {
     size: A4;
     margin: 0;
-    /* Let container handle padding for better control */
   }
 
+  html,
   body {
-    background-color: var(--bg-color);
-    padding: 0;
-    margin: 0;
+    width: 210mm;
+    height: 297mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
   .hide-print,
   .floating-bar,
-  .info-banner {
+  .info-banner,
+  .template-indicator,
+  .template-nav-btn {
+    display: none !important;
+  }
+
+  /* Reset Slider for Print */
+  .resume-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
+  }
+
+  .resume-slider-viewport {
+    overflow: visible !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    position: static !important;
+  }
+
+  .resume-slider {
+    display: block !important;
+    width: 100% !important;
+    transform: none !important;
+    transition: none !important;
+    position: static !important;
+  }
+
+  .resume-slide {
+    width: 100% !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    position: static !important;
+    filter: none !important;
+  }
+
+  .resume-slide.inactive {
     display: none !important;
   }
 
   .resume-container {
-    box-shadow: none;
-    margin: 0 auto;
-    padding: 8mm 15mm;
-    /* Consistent 8mm top padding */
-    width: 210mm;
-    /* Standard A4 width */
-    min-height: 297mm;
-    /* Standard A4 height */
-    border-radius: 0;
-    background-color: var(--bg-color);
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 10mm 15mm !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    border-radius: 0 !important;
+    background-color: #fff !important;
+    position: relative !important;
   }
 
   .page-break {
@@ -1480,11 +1529,29 @@ textarea.edit-input {
   .modern-sidebar {
     border-right: none;
     border-bottom: 1px solid var(--line-color);
-    padding: 30px;
+    padding: 30px 20px;
   }
 
   .modern-main-content {
-    padding: 30px;
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-sidebar, .modern-main-content {
+    padding: 20px 15px;
+  }
+  
+  .resume-container {
+    padding: 20px 15px;
+  }
+
+  .name {
+    font-size: 32px;
+  }
+
+  .modern-name {
+    font-size: 24px;
   }
 }
 
