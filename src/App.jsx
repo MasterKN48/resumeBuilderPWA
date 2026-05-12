@@ -24,6 +24,7 @@ const defaultData = {
   portfolio: "yourportfolio.com",
   summary:
     "Results-driven professional with a proven track record of delivering impactful solutions and driving growth. Skilled in **problem-solving**, **strategic thinking**, and leading cross-functional teams.",
+  showProfession: true,
 
   headings: {
     summary: "SUMMARY",
@@ -532,14 +533,49 @@ export default function App() {
   }) => {
     if (isEditMode) {
       if (multiline) {
+        const wordCount = value
+          ? value
+              .trim()
+              .split(/\s+/)
+              .filter((word) => word.length > 0).length
+          : 0;
         return (
-          <textarea
-            className={`edit-input ${className}`}
-            value={value}
-            placeholder={placeholder}
-            onChange={(e) => onChange(e.target.value)}
-            rows={4}
-          />
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <textarea
+              className={`edit-input ${className}`}
+              value={value}
+              placeholder={placeholder}
+              onChange={(e) => onChange(e.target.value)}
+              rows={4}
+            />
+            <div
+              className="word-counter hide-print"
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                right: "12px",
+                fontSize: "10px",
+                fontWeight: "700",
+                color: "var(--accent-color)",
+                opacity: 0.8,
+                background: "var(--pill-bg)",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                pointerEvents: "none",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+              }}
+            >
+              {wordCount} {wordCount === 1 ? "Word" : "Words"}
+            </div>
+          </div>
         );
       }
       return (
@@ -1206,12 +1242,56 @@ export default function App() {
             value={data.name}
             onChange={(val) => handleChange("name", val)}
           />
-          <EditableText
-            tag="h2"
-            className="profession"
-            value={data.profession}
-            onChange={(val) => handleChange("profession", val)}
-          />
+          {data.showProfession ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                position: "relative",
+              }}
+            >
+              <EditableText
+                tag="h2"
+                className="profession"
+                value={data.profession}
+                onChange={(val) => handleChange("profession", val)}
+              />
+              {isEditMode && (
+                <button
+                  className="clear-btn hide-print"
+                  onClick={() => handleChange("showProfession", false)}
+                  style={{
+                    padding: "4px",
+                    color: "#ef4444",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  title="Remove Profession"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+            </div>
+          ) : (
+            isEditMode && (
+              <button
+                className="sec-btn hide-print"
+                onClick={() => handleChange("showProfession", true)}
+                style={{
+                  fontSize: "12px",
+                  padding: "4px 8px",
+                  marginBottom: "15px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                }}
+              >
+                <Plus size={14} /> Add Profession
+              </button>
+            )
+          )}
 
           <div
             className="contact-info"
