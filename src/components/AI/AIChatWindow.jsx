@@ -64,12 +64,8 @@ export function AIChatWindow({
 
   return (
     <div 
-      className="ai-chat-window" 
-      style={{ 
-        width: typeof window !== 'undefined' && window.innerWidth <= 480 
-          ? 'calc(100vw - 2rem)' 
-          : `${width}px` 
-      }}
+      className="ai-chat-window"
+      style={{ width: typeof window !== 'undefined' && window.innerWidth > 640 ? `${width}px` : undefined }}
     >
       <div className="ai-chat-resizer" onMouseDown={startResizing}></div>
       <div className="ai-chat-header">

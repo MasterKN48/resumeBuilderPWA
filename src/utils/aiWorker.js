@@ -1,6 +1,5 @@
 // Web Worker for AI Inference
-// Using CDN import to bypass local resolution issues if package is not yet installed
-// v4.2.0 is the current stable v4
+// Using CDN import with Vite ESM worker bundling for production compatibility
 import {
   pipeline,
   env,

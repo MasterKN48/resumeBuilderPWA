@@ -209,7 +209,7 @@ ${AI_CONFIG.SYSTEM_PROMPT}
   };
 
   return (
-    <div className="ai-container">
+    <div className="ai-container hide-print">
       {isOpen && (
         <AIChatWindow
           onClose={() => setIsOpen(false)}

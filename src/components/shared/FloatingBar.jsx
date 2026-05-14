@@ -13,6 +13,7 @@ import {
   Shield,
   Trash2,
   Zap,
+  X,
 } from "lucide-preact";
 
 export const FloatingBar = ({
@@ -193,9 +194,18 @@ export const FloatingBar = ({
           className="dock-popover help-popover"
         >
           <div className="dock-settings help-content">
-            <div className="help-header">
-              <Sparkles size={20} style={{ color: 'var(--accent-color)' }} />
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-main)' }}>Features & Tips</h3>
+            <div className="help-header" style={{ justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Sparkles size={20} style={{ color: 'var(--accent-color)' }} />
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-main)' }}>Features & Tips</h3>
+              </div>
+              <button 
+                className="action-btn" 
+                popovertarget="help-menu"
+                style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(0,0,0,0.05)' }}
+              >
+                <X size={16} />
+              </button>
             </div>
             
             <div className="help-grid">

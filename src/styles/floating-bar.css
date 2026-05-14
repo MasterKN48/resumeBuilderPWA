@@ -383,16 +383,33 @@
   line-height: 1.4;
 }
 
-/* Mobile Popover */
 @media (max-width: 600px) {
   .dock-popover {
-    bottom: 80px;
+    bottom: 85px;
+    width: 95vw;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 28px;
+  }
+
+  .help-popover {
+    width: 95vw;
   }
 
   .dock-settings {
     flex-direction: column;
     min-width: 220px;
     padding: 15px;
+    height: auto;
+  }
+
+  .help-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .help-item {
+    padding: 12px;
   }
 
   .action-select,

@@ -430,12 +430,43 @@
   transform: none;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  .ai-container {
+    bottom: 6rem;
+    right: 1.5rem;
+    left: auto;
+    width: auto;
+    align-items: flex-end;
+  }
+
   .ai-chat-window {
-    width: calc(100vw - 2rem);
-    height: calc(100vh - 10rem);
-    bottom: 5rem;
+    position: fixed;
+    left: 1rem;
     right: 1rem;
+    bottom: 10.5rem;
+    width: auto !important;
+    height: 65vh;
+    max-height: calc(100vh - 15rem);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .ai-chat-resizer {
+    display: none;
+  }
+
+  .chat-message {
+    max-width: 90%;
+  }
+
+  .ai-setup-view {
+    padding: 1.5rem;
+  }
+
+  .ai-setup-icon {
+    width: 60px;
+    height: 60px;
   }
 }
 
