@@ -1,5 +1,6 @@
 import { X, Send, Download, Bot, Loader2, RefreshCw } from "lucide-preact";
 import { useState, useRef, useEffect } from "preact/hooks";
+import { formatMarkdown } from "../../utils/aiUtils";
 
 export function AIChatWindow({
   onClose,
@@ -11,7 +12,33 @@ export function AIChatWindow({
   isGenerating,
 }) {
   const [inputValue, setInputValue] = useState("");
+  const [width, setWidth] = useState(400);
   const messagesEndRef = useRef(null);
+  const isResizing = useRef(false);
+
+  const startResizing = (e) => {
+    isResizing.current = true;
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", stopResizing);
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "ew-resize";
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizing.current) return;
+    const newWidth = window.innerWidth - e.clientX - 20;
+    if (newWidth >= 320 && newWidth <= 800) {
+      setWidth(newWidth);
+    }
+  };
+
+  const stopResizing = () => {
+    isResizing.current = false;
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", stopResizing);
+    document.body.style.userSelect = "";
+    document.body.style.cursor = "";
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -36,14 +63,22 @@ export function AIChatWindow({
   };
 
   return (
-    <div className="ai-chat-window">
+    <div 
+      className="ai-chat-window" 
+      style={{ 
+        width: typeof window !== 'undefined' && window.innerWidth <= 480 
+          ? 'calc(100vw - 2rem)' 
+          : `${width}px` 
+      }}
+    >
+      <div className="ai-chat-resizer" onMouseDown={startResizing}></div>
       <div className="ai-chat-header">
         <div className="ai-chat-header-info">
           <div
             className={`ai-status-indicator ${status}`}
             title={`Status: ${status}`}
           ></div>
-          <h3 className="ai-chat-header-title">Pocket AI</h3>
+          <h3 className="ai-chat-header-title">Pocket Assistant</h3>
         </div>
         <button className="ai-close-button" onClick={onClose}>
           <X size={20} />
@@ -92,9 +127,16 @@ export function AIChatWindow({
           </div>
         ) : (
           <>
-            {messages.map((msg, i) => (
+            {messages.filter(m => m.role !== 'system').map((msg, i) => (
               <div key={i} className={`chat-message ${msg.role}`}>
-                {msg.content}
+                {msg.role === "ai" ? (
+                  <div 
+                    className="ai-md-content"
+                    dangerouslySetInnerHTML={{ __html: formatMarkdown(msg.content) }}
+                  />
+                ) : (
+                  msg.content
+                )}
                 {msg.role === "ai" && msg.duration && (
                   <div className="ai-message-duration">
                     Generated in {msg.duration}

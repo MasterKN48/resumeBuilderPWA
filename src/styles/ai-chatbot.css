@@ -2,12 +2,18 @@
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 1000;
+  z-index: 1001;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 1rem;
   font-family: 'Inter', sans-serif;
+  pointer-events: none;
+}
+
+.ai-chat-button, 
+.ai-chat-window {
+  pointer-events: auto;
 }
 
 @property --angle {
@@ -77,10 +83,12 @@
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     transform: scale(1);
   }
+
   50% {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
     transform: scale(1.05);
   }
+
   100% {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     transform: scale(1);
@@ -94,7 +102,9 @@
 
 .ai-chat-window {
   width: 400px;
+  max-width: calc(100vw - 2rem);
   height: 600px;
+  max-height: calc(100vh - 8rem);
   background:
     radial-gradient(circle at 30% 0%, rgba(255, 0, 128, 0.05), transparent 60%),
     radial-gradient(circle at 70% 100%, rgba(64, 224, 208, 0.05), transparent 60%),
@@ -103,13 +113,27 @@
   -webkit-backdrop-filter: blur(32px) saturate(210%);
   border: none;
   border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: bottom right;
   position: relative;
+}
+
+.ai-chat-resizer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: ew-resize;
+  z-index: 100;
+  transition: background 0.2s;
+}
+
+.ai-chat-resizer:hover,
+.ai-chat-resizer:active {
+  background: rgba(99, 102, 241, 0.3);
 }
 
 .ai-chat-window::before {
@@ -139,13 +163,19 @@
   -webkit-mask-composite: destination-out;
   animation: liquidFlow 6s linear infinite;
   opacity: 0.8;
-  z-index: 1001; /* Stay above content border but below popovers */
+  z-index: 1001;
+  /* Stay above content border but below popovers */
   pointer-events: none;
 }
 
 @keyframes liquidFlow {
-  from { --angle: 0deg; }
-  to { --angle: 360deg; }
+  from {
+    --angle: 0deg;
+  }
+
+  to {
+    --angle: 360deg;
+  }
 }
 
 @keyframes slide-up {
@@ -153,6 +183,7 @@
     opacity: 0;
     transform: scale(0.9) translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -188,9 +219,17 @@
   background: #94a3b8;
 }
 
-.ai-status-indicator.ready { background: #10b981; }
-.ai-status-indicator.downloading { background: #f59e0b; }
-.ai-status-indicator.error { background: #ef4444; }
+.ai-status-indicator.ready {
+  background: #10b981;
+}
+
+.ai-status-indicator.downloading {
+  background: #f59e0b;
+}
+
+.ai-status-indicator.error {
+  background: #ef4444;
+}
 
 .ai-close-button {
   padding: 0.5rem;
@@ -411,4 +450,91 @@
 [data-theme="navy"] .ai-chat-header-title,
 [data-theme="forest"] .ai-chat-header-title {
   color: white;
+}
+
+.ai-md-content {
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.ai-md-content h2,
+.ai-md-content h3,
+.ai-md-content h4 {
+  margin: 0.6rem 0 0.3rem 0;
+  font-weight: 700;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.ai-md-content h2 {
+  font-size: 1.25rem;
+}
+
+.ai-md-content h3 {
+  font-size: 1.1rem;
+}
+
+.ai-md-content h4 {
+  font-size: 1rem;
+}
+
+.ai-md-content h2:first-child,
+.ai-md-content h3:first-child,
+.ai-md-content h4:first-child {
+  margin-top: 0;
+}
+
+.ai-md-content strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.ai-md-content code {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85em;
+}
+
+.ai-md-list {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.ai-md-list li {
+  margin-bottom: 0.25rem;
+}
+
+.ai-code-block {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ai-code-block code {
+  background: transparent !important;
+  padding: 0 !important;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: inherit;
+  display: block;
+}
+
+[data-theme="noir"] .ai-code-block,
+[data-theme="navy"] .ai-code-block,
+[data-theme="forest"] .ai-code-block {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="noir"] .ai-md-content code,
+[data-theme="navy"] .ai-md-content code,
+[data-theme="forest"] .ai-md-content code {
+  background: rgba(255, 255, 255, 0.1);
 }

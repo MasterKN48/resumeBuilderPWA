@@ -62,10 +62,10 @@ self.addEventListener("message", async (event) => {
       ];
       console.log("### formattedMessages ###\n", formattedMessages);
       const output = await generator(formattedMessages, {
-        max_new_tokens: 2048,
-        temperature: 0.7,
-        do_sample: true,
-        top_k: 50,
+        max_new_tokens: 1024,
+        temperature: 0.0, // Much lower for precision
+        do_sample: false,
+        top_p: 0.9,
         streamer,
         ...params,
       });
@@ -84,22 +84,24 @@ self.addEventListener("message", async (event) => {
       const { system_prompt } = event.data;
       const generator = await TextGenerationPipeline.getInstance(model_id);
 
-      let prompt = `<|system|>\n${system_prompt || ""}\n`;
-      messages.forEach((m) => {
-        prompt += `${m.role === "user" ? "User" : "Assistant"}: ${m.content}\n`;
-      });
-      prompt += `\nExtremely concise summary:`;
+      // Use native chat format for summarization too
+      const chat = [
+        { role: "system", content: system_prompt },
+        ...messages,
+        {
+          role: "user",
+          content: "Summarize our conversation so far in one short sentence.",
+        },
+      ];
 
-      const output = await generator(prompt, {
-        max_new_tokens: 128,
-        temperature: 0.3, // Lower temperature for more focused summary
+      const output = await generator(chat, {
+        max_new_tokens: 1024,
+        temperature: 0.2,
         do_sample: false,
       });
 
-      const finalContent = output[0].generated_text
-        .split("summary:")
-        .pop()
-        .trim();
+      const finalContent = output[0].generated_text.at(-1).content;
+      console.log("### finalContent ###\n", finalContent);
       self.postMessage({
         type: "summarize_complete",
         content: finalContent,

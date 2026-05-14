@@ -11,24 +11,37 @@ export function AIContainer({ resumeData }) {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [chatCount, setChatCount] = useState(0);
   const [messages, setMessages] = useState([
-    { role: "ai", content: "Hello! I'm your AI career assistant. How can I help you with your resume today?" }
+    {
+      role: "ai",
+      content:
+        "Hello! I'm your AI career assistant. How can I help you with your resume today?",
+    },
   ]);
   const [isGenerating, setIsGenerating] = useState(false);
   const generationStartTime = useRef(null);
   const statusRef = useRef(status);
+  const resumeDataRef = useRef(resumeData);
+  const pendingMessageRef = useRef(null);
   const worker = useRef(null);
 
-  // Sync ref with state
+  // Sync refs with state/props
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
 
+  useEffect(() => {
+    resumeDataRef.current = resumeData;
+  }, [resumeData]);
+
   // Initialize Worker
   useEffect(() => {
     // Create the worker
-    worker.current = new Worker(new URL("../../utils/aiWorker.js", import.meta.url), {
-      type: "module",
-    });
+    worker.current = new Worker(
+      new URL("../../utils/aiWorker.js", import.meta.url),
+      {
+        type: "module",
+      },
+    );
 
     worker.current.onmessage = (event) => {
       const { type, progress, content, error } = event.data;
@@ -46,35 +59,70 @@ export function AIContainer({ resumeData }) {
             const last = prev[prev.length - 1];
             if (last && last.role === "ai") {
               const updated = [...prev];
-              updated[updated.length - 1] = { ...last, content: last.content + content };
+              updated[updated.length - 1] = {
+                ...last,
+                content: last.content + content,
+              };
               return updated;
             }
             return [...prev, { role: "ai", content }];
           });
           break;
-        case "complete":
-          const duration = ((Date.now() - generationStartTime.current) / 1000).toFixed(1);
+        case "summarize_complete":
+          console.log("### summarize_complete ###", content);
+          const pendingMsg = pendingMessageRef.current;
           
-          if (type === "summarize_complete") {
-            setMessages((prev) => {
-              // The last message is the user message that triggered this
-              const userMsg = prev[prev.length - 1];
-              return [
-                { role: "ai", content: `(Summary of previous chat): ${content}` },
-                userMsg
-              ];
-            });
-            setIsGenerating(false);
-            return;
-          }
+          const nextMessages = [
+            {
+              role: "system",
+              content: `Previous conversation summary: ${content}`,
+            },
+            { role: "user", content: pendingMsg },
+          ];
 
-          setMessages((prev) => [...prev, { 
-            role: "ai", 
-            content, 
-            duration: `${duration}s` 
-          }]);
+          setMessages(nextMessages);
+
+          // Now trigger the actual generation using the summary context
+          const minData = minifyResumeData(resumeDataRef.current);
+          const sysPrompt = `
+RESUME CONTEXT:
+${minData}
+
+CORE INSTRUCTIONS:
+${AI_CONFIG.SYSTEM_PROMPT}
+          `.trim();
+
+          worker.current.postMessage({
+            type: "generate",
+            model_id: AI_CONFIG.MODEL_ID,
+            system_prompt: sysPrompt,
+            messages: nextMessages,
+          });
+
+          pendingMessageRef.current = null;
+          break;
+
+        case "complete":
+          const duration = (
+            (Date.now() - generationStartTime.current) /
+            1000
+          ).toFixed(1);
+
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last && last.role === "ai") {
+              updated[updated.length - 1] = {
+                ...last,
+                content,
+                duration: `${duration}s`,
+              };
+              return updated;
+            }
+            return [...prev, { role: "ai", content, duration: `${duration}s` }];
+          });
           setIsGenerating(false);
-          setChatCount(prev => prev + 1);
+          setChatCount((prev) => prev + 1);
           break;
         case "error":
           console.error("AI Worker Error:", error);
@@ -87,7 +135,10 @@ export function AIContainer({ resumeData }) {
     // Silent background download check after a short delay
     const bgTimer = setTimeout(() => {
       if (statusRef.current === "idle") {
-        worker.current.postMessage({ type: 'load', model_id: AI_CONFIG.MODEL_ID });
+        worker.current.postMessage({
+          type: "load",
+          model_id: AI_CONFIG.MODEL_ID,
+        });
       }
     }, 5000); // 5 seconds delay to prioritize main content
 
@@ -96,6 +147,16 @@ export function AIContainer({ resumeData }) {
       worker.current?.terminate();
     };
   }, []);
+
+  // Trigger load immediately when chat is opened if status is idle
+  useEffect(() => {
+    if (isOpen && status === "idle") {
+      worker.current.postMessage({
+        type: "load",
+        model_id: AI_CONFIG.MODEL_ID,
+      });
+    }
+  }, [isOpen]);
 
   const handleDownload = () => {
     setStatus("downloading");
@@ -108,33 +169,49 @@ export function AIContainer({ resumeData }) {
     setIsGenerating(true);
     generationStartTime.current = Date.now();
 
-    const minifiedData = minifyResumeData(resumeData);
-    const contextPrompt = `${AI_CONFIG.SYSTEM_PROMPT}\n\nUSER RESUME DATA (JSON): ${minifiedData}`;
+    const minifiedData = minifyResumeData(resumeDataRef.current);
+    const contextPrompt = `
+RESUME CONTEXT:
+${minifiedData}
 
-    // Check if we need to summarize (every 4th message, if we have enough context)
-    if (chatCount > 0 && chatCount % 4 === 0 && messages.length > 3) {
+CORE INSTRUCTIONS:
+${AI_CONFIG.SYSTEM_PROMPT}
+    `.trim();
+
+    // Check if we need to summarize (every 3rd message, if we have enough context)
+    if (chatCount > 0 && chatCount % 3 === 0 && messages.length > 2) {
+      pendingMessageRef.current = content; // Save message to process after summary
       worker.current.postMessage({
         type: "summarize",
         model_id: AI_CONFIG.MODEL_ID,
-        system_prompt: "You are a summarizer. Provide a extremely concise 1-sentence summary of the following conversation history. Do not use conversational filler.",
+        system_prompt:
+          "You are a summarizer. Provide a extremely concise 1-sentence summary of the following conversation history. Do not use conversational filler.",
         messages: messages.slice(1), // Skip the initial greeting
       });
-      // We still want to add the user's message, it will be kept after summarization
       return;
     }
+
+    // Filter messages to only send the summary context and the latest user message
+    const filteredMessages = newMessages.filter((msg, idx) => {
+      // Keep previous summaries (system role)
+      if (msg.role === "system") return true;
+      // Keep only the current user message (the last one)
+      if (idx === newMessages.length - 1) return true;
+      return false;
+    });
 
     worker.current.postMessage({
       type: "generate",
       model_id: AI_CONFIG.MODEL_ID,
       system_prompt: contextPrompt,
-      messages: newMessages,
+      messages: filteredMessages,
     });
   };
 
   return (
     <div className="ai-container">
       {isOpen && (
-        <AIChatWindow 
+        <AIChatWindow
           onClose={() => setIsOpen(false)}
           status={status}
           downloadProgress={downloadProgress}
@@ -144,8 +221,8 @@ export function AIContainer({ resumeData }) {
           isGenerating={isGenerating}
         />
       )}
-      <AIChatButton 
-        onClick={() => setIsOpen(!isOpen)} 
+      <AIChatButton
+        onClick={() => setIsOpen(!isOpen)}
         isOpen={isOpen}
         status={status}
       />
