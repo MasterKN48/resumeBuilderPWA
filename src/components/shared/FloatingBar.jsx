@@ -22,6 +22,8 @@ export const FloatingBar = ({
   setCustomFont,
   promptInjection,
   setPromptInjection,
+  fontScale,
+  setFontScale,
 }) => {
   return (
     <div className="floating-bar hide-print">
@@ -69,6 +71,30 @@ export const FloatingBar = ({
             <option value="medium">Medium</option>
             <option value="large">Large</option>
           </select>
+
+          <div 
+            className="dock-divider" 
+            style={{ height: '24px', margin: '0 4px' }}
+          ></div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: '800', opacity: 0.6, whiteSpace: 'nowrap' }}>
+              SCALE {Math.round(fontScale * 100)}%
+            </span>
+            <input
+              type="range"
+              min="0.8"
+              max="1.2"
+              step="0.01"
+              value={fontScale}
+              onInput={(e) => setFontScale(parseFloat(e.target.value))}
+              style={{
+                width: '80px',
+                accentColor: 'var(--accent-color)',
+                cursor: 'pointer'
+              }}
+            />
+          </div>
         </div>
 
         <div className="dock-settings" style={{ borderTop: '1px solid var(--line-color)', marginTop: '8px', paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>

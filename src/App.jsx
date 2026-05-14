@@ -71,6 +71,8 @@ export default function App() {
           parsed.promptInjection = defaultData.promptInjection;
         if (!parsed.contactLayout)
           parsed.contactLayout = defaultData.contactLayout;
+        if (parsed.fontScale === undefined)
+          parsed.fontScale = defaultData.fontScale;
         return parsed;
       } catch (e) {
         return defaultData;
@@ -81,6 +83,17 @@ export default function App() {
 
   const { showInstallBanner, handleInstallClick, dismissInstall } = usePWA();
   const { scale, viewportHeight } = useScale(template, data, resumeRefs);
+
+  const [minimizedSections, setMinimizedSections] = useState(new Set());
+
+  const toggleMinimize = (id) => {
+    setMinimizedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
   const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe(setTemplate);
 
   useEffect(() => {
@@ -346,11 +359,13 @@ export default function App() {
       onDelete: () => deleteSection(index),
       onAddBreak: () => insertPageBreak(index),
       isEditMode,
+      isMinimized: minimizedSections.has(sec.id),
+      onToggleMinimize: () => toggleMinimize(sec.id),
     };
 
     const sectionProps = {
       key: sec.id,
-      className: `section relative-box sec-box section-${sec.type} ${dragSource?.type === "layout" && dragSource?.index === index ? "dragging" : ""}`,
+      className: `section relative-box sec-box section-${sec.type} ${minimizedSections.has(sec.id) ? 'section-minimized' : ''} ${dragSource?.type === "layout" && dragSource?.index === index ? "dragging" : ""}`,
       draggable: isEditMode,
       onDragStart: () => handleDragStart(index, "layout"),
       onDragOver: handleDragOver,
@@ -416,6 +431,22 @@ export default function App() {
         }
       : FONT_THEMES[fontTheme];
 
+  const getScaledFonts = (baseFonts, scale) => {
+    const scaled = {};
+    for (const [key, value] of Object.entries(baseFonts)) {
+      if (key.startsWith("--fs-")) {
+        const num = parseFloat(value);
+        const unit = value.replace(num.toString(), "");
+        scaled[key] = `${num * scale}${unit}`;
+      } else {
+        scaled[key] = value;
+      }
+    }
+    return scaled;
+  };
+
+  const scaledFontSizes = getScaledFonts(FONT_SIZES[fontSize], data.fontScale);
+
   return (
     <>
       <div className="perspective-grid hide-print"></div>
@@ -432,6 +463,8 @@ export default function App() {
         setCustomFont={setCustomFont}
         promptInjection={data.promptInjection}
         setPromptInjection={(val) => handleChange("promptInjection", val)}
+        fontScale={data.fontScale}
+        setFontScale={(val) => handleChange("fontScale", val)}
       />
 
       {/* Wrapper for Side Arrows and Resume */}
@@ -467,6 +500,7 @@ export default function App() {
               template={template}
               fontSize={fontSize}
               FONT_SIZES={FONT_SIZES}
+              scaledFontSizes={scaledFontSizes}
               dynamicFontTheme={dynamicFontTheme}
               resumeRefs={resumeRefs}
               onTouchStart={onTouchStart}
@@ -487,6 +521,7 @@ export default function App() {
               template={template}
               fontSize={fontSize}
               FONT_SIZES={FONT_SIZES}
+              scaledFontSizes={scaledFontSizes}
               dynamicFontTheme={dynamicFontTheme}
               resumeRefs={resumeRefs}
               onTouchStart={onTouchStart}

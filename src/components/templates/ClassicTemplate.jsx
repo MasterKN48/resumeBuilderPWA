@@ -8,6 +8,7 @@ export const ClassicTemplate = ({
   template,
   fontSize,
   FONT_SIZES,
+  scaledFontSizes,
   dynamicFontTheme,
   resumeRefs,
   onTouchStart,
@@ -25,7 +26,7 @@ export const ClassicTemplate = ({
     <div className={`resume-slide ${template === "classic" ? "active" : "inactive"}`}>
       <div
         className={`resume-container template-classic ${isEditMode ? "editing" : ""}`}
-        style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
+        style={{ ...scaledFontSizes, ...dynamicFontTheme }}
         ref={(el) => (resumeRefs.current[1] = el)}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
