@@ -60,7 +60,7 @@ self.addEventListener("message", async (event) => {
         { role: "system", content: system_prompt },
         ...messages,
       ];
-      console.log("### formattedMessages ###\n", formattedMessages);
+      // console.log("### formattedMessages ###\n", formattedMessages);
       const output = await generator(formattedMessages, {
         max_new_tokens: 1024,
         temperature: 0.0, // Much lower for precision

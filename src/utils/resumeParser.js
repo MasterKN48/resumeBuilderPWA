@@ -299,7 +299,7 @@ export const parseResumeWithAI = (text, onStatus) => {
           } else if (jsonStr.includes("```")) {
             jsonStr = jsonStr.split("```")[1].split("```")[0].trim();
           }
-          console.log("### ai content ###\n", content);
+          // console.log("### ai content ###\n", content);
           const parsed = JSON.parse(jsonStr);
 
           // Post-process: Add UUIDs and handle structure with strict length limits
@@ -320,24 +320,18 @@ export const parseResumeWithAI = (text, onStatus) => {
                 id: uuidv4(),
                 bullets: (exp.bullets || []).slice(0, 6), // Also limit bullets per job
               })),
-            projects: (parsed.projects || [])
-              .slice(0, 5)
-              .map((proj) => ({
-                ...proj,
-                id: uuidv4(),
-              })),
-            education: (parsed.education || [])
-              .slice(0, 2)
-              .map((edu) => ({
-                ...edu,
-                id: uuidv4(),
-              })),
-            skills: (parsed.skills || [])
-              .slice(0, 10)
-              .map((skill) => ({
-                id: uuidv4(),
-                name: typeof skill === "string" ? skill : skill.name || "",
-              })),
+            projects: (parsed.projects || []).slice(0, 5).map((proj) => ({
+              ...proj,
+              id: uuidv4(),
+            })),
+            education: (parsed.education || []).slice(0, 2).map((edu) => ({
+              ...edu,
+              id: uuidv4(),
+            })),
+            skills: (parsed.skills || []).slice(0, 10).map((skill) => ({
+              id: uuidv4(),
+              name: typeof skill === "string" ? skill : skill.name || "",
+            })),
             certifications: (parsed.certifications || [])
               .slice(0, 2)
               .map((cert) => ({
@@ -345,11 +339,11 @@ export const parseResumeWithAI = (text, onStatus) => {
                 id: uuidv4(),
               })),
           };
-          console.log(
-            "%cAI Extraction Result:",
-            "color: #40e0d0; font-weight: bold; font-size: 14px;",
-          );
-          console.log(processed);
+          // console.log(
+          //   "%cAI Extraction Result:",
+          //   "color: #40e0d0; font-weight: bold; font-size: 14px;",
+          // );
+          // console.log(processed);
           worker.terminate();
           resolve(processed);
         } catch (e) {
