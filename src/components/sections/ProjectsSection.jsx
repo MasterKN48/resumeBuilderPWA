@@ -64,7 +64,6 @@ export const ProjectsSection = ({
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  marginBottom: "8px",
                 }}
               >
                 {isEditMode ? (

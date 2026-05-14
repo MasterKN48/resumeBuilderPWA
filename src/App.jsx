@@ -26,6 +26,10 @@ import { EducationSection } from "./components/sections/EducationSection";
 import { SkillsSection } from "./components/sections/SkillsSection";
 import { CertificationsSection } from "./components/sections/CertificationsSection";
 
+// Template Components
+import { ClassicTemplate } from "./components/templates/ClassicTemplate";
+import { ModernTemplate } from "./components/templates/ModernTemplate";
+
 export default function App() {
   const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
@@ -344,7 +348,7 @@ export default function App() {
 
     const sectionProps = {
       key: sec.id,
-      className: `section relative-box sec-box ${dragSource?.type === "layout" && dragSource?.index === index ? "dragging" : ""}`,
+      className: `section relative-box sec-box section-${sec.type} ${dragSource?.type === "layout" && dragSource?.index === index ? "dragging" : ""}`,
       draggable: isEditMode,
       onDragStart: () => handleDragStart(index, "layout"),
       onDragOver: handleDragOver,
@@ -453,226 +457,40 @@ export default function App() {
               display: "flex",
             }}
           >
-            {/* Classic Slide */}
-            <div
-              className={`resume-slide ${template === "classic" ? "active" : "inactive"}`}
-            >
-              <div
-                className={`resume-container template-classic ${isEditMode ? "editing" : ""}`}
-                style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
-                ref={(el) => (resumeRefs.current[1] = el)}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
-                <header className="header relative-box sec-box">
-                  <EditableText
-                isEditMode={isEditMode}
-                    tag="h1"
-                    className="name"
-                    value={data.name}
-                    onChange={(val) => handleChange("name", val)}
-                  />
-                  {data.showProfession ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        position: "relative",
-                      }}
-                    >
-                      <EditableText
-                        isEditMode={isEditMode}
-                        tag="h2"
-                        className="profession"
-                        value={data.profession}
-                        onChange={(val) => handleChange("profession", val)}
-                      />
-                      {isEditMode && (
-                        <button
-                          className="clear-btn hide-print"
-                          onClick={() => handleChange("showProfession", false)}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    isEditMode && (
-                      <button
-                        className="sec-btn hide-print"
-                        onClick={() => handleChange("showProfession", true)}
-                      >
-                        <Plus size={14} /> Add Profession
-                      </button>
-                    )
-                  )}
-                  <div
-                    className="contact-info"
-                    style={{ flexWrap: "wrap", gap: "10px 16px" }}
-                  >
-                    {data.contactLayout.map((key, cIdx) => {
-                      const value = data[key];
-                      if (!isEditMode && !value) return null;
-                      const labels = {
-                        email: "Email: ",
-                        phone: "Phone: ",
-                        location: "Location: ",
-                        linkedin: "LinkedIn: ",
-                        portfolio: "Portfolio: ",
-                      };
-                      return (
-                        <div
-                          key={key}
-                          className={`contact-item relative-box ${dragSource?.type === "contact" && dragSource?.index === cIdx ? "dragging" : ""}`}
-                          draggable={isEditMode}
-                          onDragStart={() => handleDragStart(cIdx, "contact")}
-                          onDragOver={handleDragOver}
-                          onDrop={() => handleDrop(cIdx, "contact")}
-                          onDragEnd={() => setDragSource(null)}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          {isEditMode && (
-                            <div
-                              className="drag-handle-mini"
-                              style={{
-                                cursor: "grab",
-                                display: "flex",
-                                alignItems: "center",
-                                opacity: 0.4,
-                              }}
-                            >
-                              <GripVertical size={12} />
-                            </div>
-                          )}
-                          <span
-                            style={{
-                              fontWeight: "600",
-                              fontSize: "0.9em",
-                              color: "var(--text-secondary)",
-                            }}
-                          >
-                            {labels[key]}
-                          </span>
-                          <EditableText
-                            isEditMode={isEditMode}
-                            value={value}
-                            onChange={(val) => handleChange(key, val)}
-                            placeholder={
-                              key.charAt(0).toUpperCase() + key.slice(1)
-                            }
-                          />
-                          {isEditMode && (
-                            <button
-                              className="clear-btn hide-print"
-                              onClick={() => handleChange(key, "")}
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </header>
-                {data.layout.map((sec, index) => renderSection(sec, index))}
-              </div>
-            </div>
+            <ClassicTemplate
+              data={data}
+              isEditMode={isEditMode}
+              template={template}
+              fontSize={fontSize}
+              FONT_SIZES={FONT_SIZES}
+              dynamicFontTheme={dynamicFontTheme}
+              resumeRefs={resumeRefs}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              handleChange={handleChange}
+              handleDragStart={handleDragStart}
+              handleDragOver={handleDragOver}
+              handleDrop={handleDrop}
+              setDragSource={setDragSource}
+              dragSource={dragSource}
+              renderSection={renderSection}
+            />
 
-            {/* Modern Slide */}
-            <div
-              className={`resume-slide ${template === "modern" ? "active" : "inactive"}`}
-            >
-              <div
-                className={`resume-container template-modern ${isEditMode ? "editing" : ""}`}
-                style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
-                ref={(el) => (resumeRefs.current[2] = el)}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
-                <div className="modern-layout">
-                  <aside className="modern-sidebar">
-                    <div className="modern-sidebar-top">
-                      <EditableText
-                        isEditMode={isEditMode}
-                        tag="h1"
-                        className="modern-name"
-                        value={data.name}
-                        onChange={(val) => handleChange("name", val)}
-                      />
-                      <EditableText
-                        isEditMode={isEditMode}
-                        tag="h2"
-                        className="modern-profession"
-                        value={data.profession}
-                        onChange={(val) => handleChange("profession", val)}
-                      />
-                    </div>
-                    <div className="modern-contact-section">
-                      <h3 className="modern-sidebar-title">Contact</h3>
-                      <div className="modern-contact-list">
-                        {data.contactLayout.map((key) => {
-                          const value = data[key];
-                          if (!isEditMode && !value) return null;
-                          const labels = {
-                            email: "Email",
-                            phone: "Phone",
-                            location: "Location",
-                            linkedin: "LinkedIn",
-                            portfolio: "Portfolio",
-                          };
-                          return (
-                            <div key={key} className="modern-contact-item">
-                              <span className="modern-contact-label">
-                                {labels[key]}
-                              </span>
-                              <EditableText
-                            isEditMode={isEditMode}
-                                className="modern-contact-value"
-                                value={value}
-                                onChange={(val) => handleChange(key, val)}
-                                placeholder={labels[key]}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    {data.layout
-                      .filter(
-                        (s) =>
-                          s.type === "skills" || s.type === "certifications",
-                      )
-                      .map((sec) => (
-                        <div key={sec.id} className="modern-sidebar-section">
-                          <h3 className="modern-sidebar-title">
-                            {sec.type === "skills"
-                              ? data.headings.skills
-                              : data.headings.certifications}
-                          </h3>
-                          {renderSection(sec, data.layout.indexOf(sec))}
-                        </div>
-                      ))}
-                  </aside>
-                  <main className="modern-main-content">
-                    {data.layout
-                      .filter(
-                        (s) =>
-                          s.type !== "skills" && s.type !== "certifications",
-                      )
-                      .map((sec) =>
-                        renderSection(sec, data.layout.indexOf(sec)),
-                      )}
-                  </main>
-                </div>
-              </div>
-            </div>
+            <ModernTemplate
+              data={data}
+              isEditMode={isEditMode}
+              template={template}
+              fontSize={fontSize}
+              FONT_SIZES={FONT_SIZES}
+              dynamicFontTheme={dynamicFontTheme}
+              resumeRefs={resumeRefs}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              handleChange={handleChange}
+              renderSection={renderSection}
+            />
           </div>
         </div>
       </div>

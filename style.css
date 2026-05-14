@@ -537,7 +537,8 @@ body {
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--text-main);
-  margin-bottom: 2px;
+  margin-bottom: 0px;
+  line-height: 1.1;
 }
 
 .profession {
@@ -546,8 +547,9 @@ body {
   font-weight: 600;
   letter-spacing: 1.5px;
   color: var(--accent-color);
-  margin-bottom: 15px;
+  margin-bottom: 6px;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .contact-info {
@@ -649,16 +651,21 @@ body {
 
 /* Sections */
 .section {
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  margin-bottom: 6px;
+  padding-bottom: 2px;
   border-bottom: 2px solid var(--line-color);
+}
+
+.section-skills .section-header {
+  margin-bottom: 16px;
+  padding-bottom: 4px;
 }
 
 .icon-circle {
@@ -675,6 +682,7 @@ body {
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--text-main);
+  line-height: 1.2;
 }
 
 .section-content {
@@ -691,8 +699,9 @@ p {
 
 /* Experience / Education */
 .experience-item,
-.education-item {
-  margin-bottom: 25px;
+.education-item,
+.project-item {
+  margin-bottom: 16px;
 }
 
 .experience-item:last-child,
@@ -704,7 +713,7 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .job-title {
@@ -724,7 +733,7 @@ p {
 .company-location {
   font-size: var(--fs-body);
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .bullet-list {
@@ -734,7 +743,7 @@ p {
 }
 
 .bullet-list li {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   padding-left: 6px;
 }
 
@@ -747,13 +756,13 @@ p {
 .skills-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 20px;
+  gap: 10px 18px;
 }
 
 .skill-pill {
   background-color: var(--pill-bg);
   color: var(--text-main);
-  padding: 4px 10px !important;
+  padding: 2px 8px !important;
   border-radius: 6px;
   border: 1px solid var(--line-color);
   font-size: var(--fs-small);
@@ -773,7 +782,7 @@ p {
 
 .certifications-list li {
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .certifications-list li::before {
@@ -1100,30 +1109,24 @@ textarea.edit-input {
     padding-bottom: 0 !important;
   }
 
-  .resume-slider-viewport {
-    overflow: visible !important;
-    width: 100% !important;
-    height: auto !important;
-    border-radius: 0 !important;
-    position: static !important;
+  .section {
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
-  .resume-slider {
+  .section-header {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .resume-slider-viewport,
+  .resume-slider,
+  .resume-slide {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
     display: block !important;
     width: 100% !important;
-    transform: none !important;
-    transition: none !important;
-    position: static !important;
-  }
-
-  .resume-slide {
-    width: 100% !important;
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-    position: static !important;
-    filter: none !important;
-    margin: 0 !important;
   }
 
   .resume-slide.inactive {
@@ -1135,10 +1138,13 @@ textarea.edit-input {
     margin: 0 !important;
     padding: 4mm 10mm !important;
     width: 210mm !important;
-    min-height: 297mm !important;
+    height: auto !important;
+    min-height: 0 !important;
     border-radius: 0 !important;
     background-color: #fff !important;
     position: relative !important;
+    overflow: visible !important;
+    display: block !important;
   }
 
   .page-break {
@@ -1167,6 +1173,7 @@ textarea.edit-input {
     print-color-adjust: exact !important;
   }
 }
+
 
 /* Drag and Drop Styles */
 .dragging {
@@ -1344,7 +1351,7 @@ textarea.edit-input {
   border-right: 1px solid var(--line-color);
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
 }
 
 .modern-sidebar-top {
@@ -1387,7 +1394,7 @@ textarea.edit-input {
 .modern-contact-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .modern-contact-item {
@@ -1414,22 +1421,19 @@ textarea.edit-input {
   padding: 40px 50px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 15px;
 }
 
 /* Override Classic Section Styles for Modern */
 .template-modern .section-header {
   border-bottom: 1.5px solid var(--line-color);
-  margin-bottom: 15px;
+  margin-bottom: 6px;
 }
 
 .template-modern .section-title {
   font-size: 16px;
   letter-spacing: 1.5px;
-}
-
-.template-modern .experience-header {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .template-modern .job-title {
