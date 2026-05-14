@@ -1,0 +1,369 @@
+/* Edit Mode Spacing Improvements */
+.editing .header {
+  margin-bottom: 20px !important;
+}
+
+.editing .name,
+.editing .profession {
+  margin-bottom: 15px !important;
+}
+
+.editing .contact-info {
+  gap: 25px 35px !important;
+  margin-top: 15px;
+}
+
+.editing .contact-item {
+  padding: 8px 12px;
+  background: var(--hover-bg);
+  border: 1px solid var(--line-color);
+  border-radius: 8px;
+}
+
+.editing .section {
+  margin-bottom: 20px !important;
+  padding: 20px !important;
+  border: 1px dashed var(--line-color);
+  background-color: var(--hover-bg);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.editing .section:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.editing .section-header {
+  margin-bottom: 25px !important;
+}
+
+.editing .experience-item,
+.editing .education-item {
+  margin-bottom: 35px !important;
+  padding: 15px;
+  background: white;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.editing .experience-item:hover,
+.editing .education-item:hover {
+  border-color: var(--line-color);
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.clear-btn:hover {
+  opacity: 1;
+}
+
+/* Edit Inputs */
+.edit-input {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  background-color: var(--input-bg);
+  border: 1px dashed var(--accent-color);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -3px -5px;
+  width: auto;
+  max-width: 100%;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.edit-input:focus {
+  background-color: var(--bg-color);
+  border: 1px solid var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(216, 98, 68, 0.2);
+}
+
+textarea.edit-input {
+  width: 100%;
+  resize: vertical;
+}
+
+/* Relative positioning for hover controls */
+.relative-box {
+  position: relative;
+  padding: 8px;
+  margin: -8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.editing .relative-box:hover {
+  border-color: var(--line-color);
+  background-color: var(--hover-bg);
+}
+
+/* Item Controls */
+.item-controls {
+  position: absolute;
+  right: -40px;
+  top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.relative-box:hover .item-controls {
+  opacity: 1;
+}
+
+.item-controls button {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.item-controls button:hover {
+  background: #f5f5f5;
+  color: var(--text-main);
+}
+
+/* Bullets edit mode */
+.bullet-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bullet-item .edit-input {
+  flex: 1;
+}
+
+.del-bullet-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 4px;
+}
+
+.bullet-item:hover .del-bullet-btn {
+  opacity: 1;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 15px;
+  background: none;
+  border: 1px dashed #ccc;
+  color: #666;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.add-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: #fff9f6;
+}
+
+.add-btn.sub-btn {
+  margin-top: 5px;
+  padding: 6px 12px;
+  font-size: 12px;
+  width: auto;
+}
+
+.del-skill-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.skill-pill:hover .del-skill-btn {
+  opacity: 1;
+}
+
+.add-skill-btn {
+  background: white;
+  border: 1px dashed #ccc;
+  border-radius: 20px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+}
+
+.add-skill-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Section Box (for entire sections) */
+.sec-box {
+  border: 1.5px solid transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  position: relative;
+}
+
+.editing .sec-box:hover {
+  border-color: var(--accent-color);
+  background-color: var(--hover-bg);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+}
+
+.section-controls {
+  position: absolute;
+  top: -22px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 4px;
+  border-radius: 10px;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--line-color);
+  transform: translateY(10px) scale(0.95);
+}
+
+.sec-box:hover .section-controls {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.sec-btn {
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sec-btn:hover {
+  background: var(--pill-bg);
+  color: var(--accent-color);
+}
+
+.sec-btn.danger-hover:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.break-btn {
+  border-left: 1px solid var(--line-color);
+  margin-left: 4px;
+  padding-left: 10px;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Minimize State */
+.section-minimized .section-content,
+.section-minimized .bullet-list,
+.section-minimized .experience-item,
+.section-minimized .skills-list {
+  display: none !important;
+}
+
+.section-minimized {
+  margin-bottom: 5px !important;
+  opacity: 0.8;
+}
+
+.page-break-indicator {
+  text-align: center;
+  color: var(--accent-color);
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 20px;
+  background: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 10px,
+      #fae8e3 10px,
+      #fae8e3 20px);
+  border: 2px dashed var(--accent-color);
+  border-radius: 8px;
+}
+
+/* Drag and Drop Styles */
+.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--accent-color) !important;
+  background-color: var(--hover-bg) !important;
+}
+
+.drag-handle {
+  cursor: grab !important;
+}
+
+.drag-handle:active {
+  cursor: grabbing !important;
+}
+
+.section.dragging {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: scale(0.99);
+}

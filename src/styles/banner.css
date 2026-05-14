@@ -1,0 +1,154 @@
+.info-banner {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  max-width: 800px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.info-banner ul {
+  margin-left: 20px;
+  margin-top: 8px;
+}
+
+.info-banner li {
+  margin-bottom: 4px;
+}
+
+/* PWA Install Banner - Enhanced Compact UI */
+.install-banner {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  width: 320px;
+  padding: 1.2px;
+  border-radius: 20px;
+  background: conic-gradient(from var(--angle),
+      transparent 0deg,
+      #ff0080 5deg,
+      #ff8c00 15deg,
+      #40e0d0 25deg,
+      #9932cc 35deg,
+      #ff0080 45deg,
+      transparent 55deg,
+      transparent 180deg,
+      #ff0080 185deg,
+      #ff8c00 195deg,
+      #40e0d0 205deg,
+      #9932cc 215deg,
+      #ff0080 225deg,
+      transparent 235deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1), rotate 4s linear infinite;
+}
+
+.install-content {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border-radius: 19px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-theme="noir"] .install-content,
+[data-theme="navy"] .install-content,
+[data-theme="forest"] .install-content {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.install-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-icon {
+  width: 42px;
+  height: 42px;
+  background: var(--accent-color);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.install-text h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+
+.install-text p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.install-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.install-btn {
+  flex: 2;
+  background: var(--text-main);
+  color: var(--bg-color);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.install-btn:hover {
+  opacity: 0.9;
+}
+
+.dismiss-btn {
+  flex: 1;
+  background: var(--pill-bg);
+  border: 1px solid var(--line-color);
+  color: var(--text-secondary);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .install-banner {
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    width: auto;
+  }
+
+  .action-btn::after {
+    display: none !important;
+  }
+
+  .floating-bar {
+    bottom: 16px;
+    gap: 16px;
+    padding: 8px 16px;
+  }
+}

@@ -1,0 +1,31 @@
+.perspective-grid {
+  position: fixed;
+  inset: -150%;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 25px 25px;
+  perspective: 1500px;
+  transform: rotateX(60deg) rotateZ(-20deg) translateY(-20%) scale(3);
+  transform-origin: center;
+  mask-image: radial-gradient(ellipse at center, black 10%, transparent 60%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 60%);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+[data-theme="noir"] .perspective-grid,
+[data-theme="navy"] .perspective-grid,
+[data-theme="forest"] .perspective-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  opacity: 0.6;
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}

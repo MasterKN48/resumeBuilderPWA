@@ -1,0 +1,121 @@
+/* Modern Template Styles */
+.template-modern {
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modern-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 1100px;
+  /* A4-ish ratio */
+  background: white;
+}
+
+.modern-sidebar {
+  background-color: var(--pill-bg);
+  padding: 40px 30px;
+  border-right: 1px solid var(--line-color);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modern-sidebar-top {
+  margin-bottom: 20px;
+}
+
+.modern-name {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modern-profession {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.modern-sidebar-title {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-main);
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid var(--accent-color);
+  width: fit-content;
+}
+
+.modern-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modern-contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modern-contact-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.modern-contact-value {
+  font-size: 12px;
+  color: var(--text-main);
+  word-break: break-all;
+}
+
+.modern-main-content {
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Override Classic Section Styles for Modern */
+.template-modern .section-header {
+  border-bottom: 1.5px solid var(--line-color);
+  margin-bottom: 6px;
+}
+
+.template-modern .section-title {
+  font-size: 16px;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+.template-modern .job-title {
+  font-size: 14px;
+  color: var(--accent-color);
+}
+
+.template-modern .skills-list {
+  gap: 8px;
+}
+
+.template-modern .skill-pill {
+  background: white;
+  padding: 3px 8px !important;
+  font-size: 11px;
+}

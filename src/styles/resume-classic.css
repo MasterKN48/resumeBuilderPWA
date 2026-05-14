@@ -1,0 +1,51 @@
+/* Header */
+.header {
+  margin-bottom: 25px;
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: var(--fs-name);
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-main);
+  margin-bottom: 0px;
+  line-height: 1.1;
+}
+
+.profession {
+  font-family: var(--font-heading);
+  font-size: var(--fs-prof);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--accent-color);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.contact-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-item i {
+  color: var(--accent-color);
+  font-size: var(--fs-body);
+}
+
+.contact-separator {
+  width: 1px;
+  height: 14px;
+  background-color: var(--line-color);
+}

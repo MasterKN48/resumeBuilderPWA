@@ -1,0 +1,81 @@
+.resume-container {
+  background-color: white;
+  width: 800px;
+  min-width: 800px;
+  max-width: 800px;
+  padding: 40px 50px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-sizing: border-box;
+  margin: 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.resume-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.resume-slider-viewport {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+  border-radius: 12px;
+}
+
+.resume-slider {
+  display: flex;
+  width: 1600px;
+  max-width: 1600px;
+  /* Two templates side-by-side */
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+  align-items: flex-start;
+}
+
+.resume-slider.template-active-classic {
+  transform: translateX(0%);
+}
+
+.resume-slider.template-active-modern {
+  transform: translateX(-800px);
+}
+
+.resume-slide {
+  width: 800px;
+  flex-shrink: 0;
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 40px;
+}
+
+.resume-slide.inactive {
+  opacity: 0.3;
+  transform: scale(0.98);
+  pointer-events: none;
+  filter: blur(2px);
+  height: 0;
+  overflow: hidden;
+}
+
+.resume-slide.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  filter: blur(0);
+}
+
+/* Ensure container styles don't conflict with slider */
+.resume-container {
+  margin: 0 !important;
+  /* Slider handles centering */
+  width: 100% !important;
+}

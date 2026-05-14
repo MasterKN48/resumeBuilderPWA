@@ -1,0 +1,97 @@
+:root {
+  --bg-color: #0f172a;
+  --text-main: #2d2d2d;
+  --text-secondary: #4a4a4a;
+  --accent-color: #d86244;
+  /* Sunset (Default) */
+  --pill-bg: #faebe6;
+  --line-color: #eddbd3;
+  --input-bg: rgba(255, 255, 255, 0.7);
+  --hover-bg: #fff9f6;
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Base Font Sizes */
+  --fs-name: 42px;
+  --fs-prof: 15px;
+  --fs-section: 17px;
+  --fs-job: 15px;
+  --fs-body: 14px;
+  --fs-small: 13px;
+  --fs-icon-md: 16px;
+  --fs-icon-lg: 20px;
+}
+
+[data-theme="emerald"] {
+  --bg-color: #f7fdfb;
+  --accent-color: #059669;
+  --pill-bg: #ecfdf5;
+  --line-color: #d1fae5;
+  --hover-bg: #f0faf7;
+}
+
+[data-theme="royal"] {
+  --bg-color: #f8faff;
+  --accent-color: #2563eb;
+  --pill-bg: #eff6ff;
+  --line-color: #dbeafe;
+  --hover-bg: #f0f7ff;
+}
+
+[data-theme="midnight"] {
+  --bg-color: #f9f8ff;
+  --accent-color: #7c3aed;
+  --pill-bg: #f5f3ff;
+  --line-color: #ede9fe;
+  --hover-bg: #f5f0ff;
+}
+
+[data-theme="slate"] {
+  --bg-color: #f8fafc;
+  --accent-color: #334155;
+  --pill-bg: #f1f5f9;
+  --line-color: #e2e8f0;
+  --hover-bg: #f1f5f9;
+}
+
+[data-theme="rose"] {
+  --bg-color: #fffafb;
+  --accent-color: #be123c;
+  --pill-bg: #fff1f2;
+  --line-color: #ffe4e6;
+  --hover-bg: #fff5f6;
+}
+
+/* Dark Themes */
+[data-theme="noir"] {
+  --bg-color: #121212;
+  --text-main: #ffffff;
+  --text-secondary: #a0a0a0;
+  --accent-color: #818cf8;
+  --pill-bg: #2d2d2d;
+  --line-color: #404040;
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: #1e1e1e;
+}
+
+[data-theme="navy"] {
+  --bg-color: #0f172a;
+  --text-main: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #38bdf8;
+  --pill-bg: #1e293b;
+  --line-color: #334155;
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: #1e293b;
+}
+
+[data-theme="forest"] {
+  --bg-color: #064e3b;
+  --text-main: #ecfdf5;
+  --text-secondary: #6ee7b7;
+  --accent-color: #34d399;
+  --pill-bg: #065f46;
+  --line-color: #047857;
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: #065f46;
+}

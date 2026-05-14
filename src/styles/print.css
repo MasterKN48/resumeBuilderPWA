@@ -1,0 +1,103 @@
+/* Print Styles */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0mm;
+  }
+
+  html,
+  body {
+    width: 210mm !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    overflow: visible !important;
+  }
+
+  .hide-print,
+  .floating-bar,
+  .info-banner,
+  .template-indicator,
+  .template-nav-btn {
+    display: none !important;
+  }
+
+  /* Reset Slider for Print - Force Desktop Layout */
+  .resume-wrapper,
+  .resume-slider-viewport,
+  .resume-slider,
+  .resume-slide,
+  .resume-slide.active,
+  .resume-container {
+    display: block !important;
+    width: 210mm !important;
+    min-width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    padding-bottom: 0 !important;
+    position: static !important;
+    transform: none !important;
+    zoom: 1 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #fff !important;
+    min-height: 0 !important;
+  }
+
+  .resume-container {
+    padding: 5mm 10mm !important;
+    min-height: 0 !important;
+  }
+
+  .resume-slide.inactive {
+    display: none !important;
+  }
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+    margin: 0;
+    padding: 0;
+    height: 0;
+    border: none;
+  }
+
+  /* Add breathing room to sections starting on a new page */
+  .page-break+.section {
+    margin-top: 8mm;
+  }
+
+  .edit-input {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Print Overrides for Modern */
+  .template-modern {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .modern-layout {
+    display: grid !important;
+    grid-template-columns: 240px 1fr !important;
+    width: 210mm !important;
+  }
+
+  .modern-sidebar {
+    background-color: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+  }
+}

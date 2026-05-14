@@ -1,0 +1,222 @@
+/* Sections */
+.section {
+  margin-bottom: 10px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  padding-bottom: 2px;
+  border-bottom: 2px solid var(--line-color);
+}
+
+.section-skills .section-header {
+  margin-bottom: 16px;
+  padding-bottom: 4px;
+}
+
+.icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  font-size: var(--fs-icon-lg);
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: var(--fs-section);
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.section-content {
+  padding-left: 2px;
+  font-size: var(--fs-body);
+  color: var(--text-main);
+}
+
+/* Experience / Education */
+.experience-item,
+.education-item,
+.project-item {
+  margin-bottom: 16px;
+}
+
+.experience-item:last-child,
+.education-item:last-child {
+  margin-bottom: 0;
+}
+
+.experience-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+.job-title {
+  font-size: var(--fs-job);
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.company-location {
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.bullet-list {
+  list-style-type: disc;
+  padding-left: 20px;
+  color: var(--text-main);
+}
+
+.bullet-list li {
+  margin-bottom: 4px;
+  padding-left: 6px;
+}
+
+.bullet-list li::marker {
+  color: var(--text-main);
+  font-size: var(--fs-small);
+}
+
+/* Skills */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+
+.skill-pill {
+  background-color: var(--pill-bg);
+  color: var(--text-main);
+  padding: 2px 8px !important;
+  border-radius: 6px;
+  border: 1px solid var(--line-color);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  margin-bottom: 4px !important;
+}
+
+/* Certifications */
+.certifications-list {
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+.certifications-list li {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.certifications-list li::before {
+  content: "•";
+  color: var(--text-main);
+  font-weight: bold;
+  position: absolute;
+  left: -15px;
+}
+
+.cert-item {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.page-break {
+  margin: 30px 0;
+}
+
+/* Swipe Indicator Dots */
+.template-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .template-indicator {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line-color);
+  transition: all 0.3s ease;
+}
+
+.indicator-dot.active {
+  background: var(--accent-color);
+  transform: scale(1.2);
+}
+
+/* Template Navigation Buttons */
+.template-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  background: white;
+  border: 1px solid var(--line-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  color: var(--accent-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.resume-wrapper:hover .template-nav-btn {
+  opacity: 1;
+}
+
+.prev-btn {
+  left: -80px;
+}
+
+.next-btn {
+  right: -80px;
+}
+
+.template-nav-btn:hover {
+  background: var(--accent-color);
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+@media (max-width: 1100px) {
+  .template-nav-btn {
+    display: none;
+    /* Hide on small screens or narrow windows */
+  }
+}
