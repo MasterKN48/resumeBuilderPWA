@@ -24,20 +24,21 @@ The project is built using **Preact** for high performance and a small bundle si
 ### Core Philosophy
 
 1.  **Data-Driven UI:** The entire resume is represented by a single JSON object.
-2.  **Hook-Based Logic:** All business logic (CRUD, Layout, PWA) is encapsulated in custom hooks.
+2.  **On-Device AI:** All AI features (parsing, chat) run locally via WebGPU/Transformers.js for total privacy.
 3.  **Style Isolation:** Modular CSS ensures that templates can coexist without style leakage.
 
 ---
 
 ## ✨ Features
 
-- **PWA & Offline:** Works without an internet connection and can be installed as a native app on iOS, Android, and Desktop.
-- **Live Templates:** Instantly switch between "Classic" and "Modern" layouts with a swipe or keyboard shortcut.
+- **AI Career Assistant:** On-device WebGPU-powered AI chat for real-time resume optimization and career advice.
+- **AI Resume Parsing:** Extract data directly from existing PDF resumes using semantic AI analysis (no server-side processing).
+- **PWA & Offline:** Works without an internet connection and can be installed as a native app.
+- **Live Templates:** Instantly switch between "Classic" and "Modern" layouts.
 - **Interactive Drag & Drop:** Rearrange sections on the fly using native HTML5 drag events.
 - **Smart Content Editing:** Markdown-style bolding support and automatic field hiding for empty data.
-- **Dynamic Scaling:** Mobile-first design that auto-scales the resume to fit any screen size while maintaining layout integrity.
-- **Custom Typography:** Integration with Google Fonts for professional typefaces.
-- **Privacy First:** All data is stored locally in your browser's `localStorage`. No accounts or server-side storage required.
+- **Dynamic Scaling:** Mobile-first design that auto-scales the resume to fit any screen size.
+- **Privacy First:** All data is stored locally in your browser's `localStorage`. No accounts required.
 
 ---
 
@@ -45,25 +46,21 @@ The project is built using **Preact** for high performance and a small bundle si
 
 ### `/src`
 
-The heart of the application.
-
-- **`App.jsx`**: The main entry point. It orchestrates the hooks and renders the high-level layout (FloatingBar, Viewport, Templates).
-- **`/components`**:
-  - **`SectionRenderer.jsx`**: A high-order component that wraps individual sections, providing drag-and-drop handles and editing controls.
-  - **`/sections`**: Individual resume modules (e.g., `ExperienceSection.jsx`, `SkillsSection.jsx`). Each section is designed to be standalone.
-  - **`/shared`**: Reusable UI elements like `FloatingBar.jsx`, `EditableText.jsx`, and `InstallBanner.jsx`.
-  - **`/templates`**: High-level layout wrappers (`ClassicTemplate.jsx`, `ModernTemplate.jsx`) that define the visual structure of the resume.
+- **`App.jsx`**: The main entry point. It orchestrates hooks and renders the high-level layout.
+- **`/components/AI`**:
+  - **`AIContainer.jsx`**: Orchestrates state and messages between the UI and the AI Worker.
+  - **`aiWorker.js`**: Web Worker handling heavy AI inference off-main-thread.
 - **`/hooks`**:
   - **`useResumeData.js`**: Manages the main state, local storage persistence, and data updates.
   - **`useSettings.js`**: Handles theme, font sizing, and template switching.
-  - **`useLayoutManager.js`**: Manages section ordering (drag-and-drop), visibility, and page breaks.
+  - **`useLayoutManager.js`**: Manages section ordering, visibility, and page breaks.
 - **`/styles`**:
   - **`variables.css`**: Centralized design tokens (colors, spacing, shadows).
-  - **`resume-core.css`**: Shared styles for resume elements across all templates.
   - **`print.css`**: Specialized media queries for pixel-perfect PDF export.
-  - **`edit-mode.css`**: Styles specifically for the interactive editor state.
-- **`/constants`**:
-  - **`resumeData.js`**: Defines the default schema and initial state for a new resume.
+  - **`ai-chatbot.css`**: Custom animations and responsive layouts for the AI interface.
+- **`/utils`**:
+  - **`resumeParser.js`**: Logic for AI-powered resume extraction.
+  - **`pdfParser.js`**: Client-side PDF text extraction engine.
 
 ---
 
@@ -71,19 +68,11 @@ The heart of the application.
 
 ### Data Persistence
 
-Data is automatically synced to `localStorage` on every change via `useResumeData`. This ensures that work is never lost, even if the tab is closed.
+Data is automatically synced to `localStorage` on every change via `useResumeData`.
 
 ### Print Logic (`handlePrint`)
 
-The application uses a custom print handler that:
-
-1.  Disables Edit Mode for a clean export.
-2.  Applies specialized scaling for mobile devices to ensure the PDF remains A4/Letter size regardless of the viewport.
-3.  Injects a `mobile-print` class to handle browser-specific print quirks.
-
-### Layout Management
-
-The `useLayoutManager` hook provides a `layout` array which is a list of section IDs. The `SectionRenderer` uses this array to determine the visual order of components, allowing for seamless reordering.
+Disables Edit Mode, applies specialized scaling for mobile, and injects a `mobile-print` class for pixel-perfect PDF generation.
 
 ---
 
@@ -107,7 +96,6 @@ bun run build
 1.  **Destination:** Save as PDF
 2.  **Margins:** Set to **Default** (The app handles its own 15mm margins).
 3.  **Options:** Ensure **Background Graphics** is **checked**.
-4.  **Paper Size:** A4 or Letter.
 
 ---
 

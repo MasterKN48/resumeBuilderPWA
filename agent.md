@@ -9,15 +9,26 @@ This document serves as a technical deep-dive for AI agents and developers worki
 The application uses a "Single Source of Truth" pattern. All resume content and layout settings reside in a centralized `data` object managed by the `useResumeData` hook.
 
 ### `useResumeData.js`
-This hook is responsible for the core CRUD operations.
+This hook is responsible for core CRUD operations.
 -   **`data`**: The master state object.
 -   **`handleChange(path, value)`**: Updates a specific top-level or nested field.
--   **`handleArrayChange(sectionId, itemId, field, value)`**: Specialized updater for array items (e.g., job descriptions).
--   **`addItem(sectionId)`**: Pushes a new empty object into a section's list.
--   **`deleteItem(sectionId, itemId)`**: Removes an item from a section.
+-   **`setData(newData)`**: Bulk updates the entire resume state (used during AI imports).
 
-### Persistence
-Persistence is handled via a `useEffect` in `useResumeData` that stringifies the `data` object and saves it to `localStorage` under the key `pocket-resume-data`.
+---
+
+## 🧠 AI Infrastructure (On-Device)
+
+PocketResume runs Large Language Models directly on the client's GPU using WebGPU.
+
+### Web Worker Engine (`aiWorker.js`)
+To maintain 60FPS UI performance, all inference is offloaded to a Web Worker.
+-   **Library**: `@huggingface/transformers` (v4.2.0).
+-   **Quantization**: `q4f16` (4-bit weights) for minimal VRAM usage.
+-   **Context Management**: Implements a summarization loop every 3 messages to stay within the model's context window.
+
+### AI Parsing (`resumeParser.js`)
+-   **Process**: PDF (Blob) -> `pdf.js` (Raw Text) -> LLM (Extraction) -> JSON Schema.
+-   **Prompting**: Uses a specialized system prompt in `constants/prompts.js` to enforce strict JSON output.
 
 ---
 
@@ -26,58 +37,28 @@ Persistence is handled via a `useEffect` in `useResumeData` that stringifies the
 ### `useLayoutManager.js`
 Manages the visual ordering and visibility of sections.
 -   **`layout`**: An array of section IDs (e.g., `['summary', 'experience', 'skills']`).
--   **`handleDrop(e, targetIndex)`**: Implements the native Drag & Drop logic to reorder the `layout` array.
--   **`toggleMinimize(sectionId)`**: Controls the collapsed state of sections in the editor to reduce visual clutter.
--   **`insertPageBreak(index)`**: Injects a special `pageBreak` object into the layout which triggers `break-before: page` in CSS.
+-   **`insertPageBreak(index)`**: Injects a special `pageBreak` object to trigger CSS breaks.
 
 ### `utils/hooks.js`
--   **`usePWA`**: Handles the installation prompt. It includes a **3-day persistence cooldown** (using `localStorage`) to prevent nagging the user too frequently.
--   **`useSwipe`**: Enables horizontal swiping between resume templates, particularly useful for mobile navigation.
--   **`useScale`**: Dynamically calculates the `transform: scale()` value and viewport height to ensure the resume remains fully visible on mobile screens.
-
-### `useSettings.js`
-Handles the visual environment of the resume.
--   **`fontTheme`**: Manages the mapping between internal theme names and Google Font families.
--   **`fontSize`**: A base multiplier used to scale all typography proportionally.
--   **`theme`**: Controls the color palette (e.g., "Slate", "Sunset").
+-   **`usePWA`**: Handles the installation prompt with a 3-day cooldown.
+-   **`useScale`**: Dynamically calculates `transform: scale()` for mobile responsiveness.
 
 ---
 
 ## 🎨 Styling System
 
-The project uses a modular CSS approach located in `/src/styles`.
+### Mobile AI UI (`ai-chatbot.css`)
+-   **Positioning**: Uses `fixed` positioning with `bottom: 10.5rem` on mobile to avoid overlapping the floating navigation bar.
+-   **Desktop Scaling**: Uses JavaScript-injected width only on screens `> 640px` to preserve CSS-driven responsiveness on mobile.
 
-### Key CSS Files
--   **`variables.css`**: Defines CSS variables for themes. All components MUST use these variables instead of hardcoded hex values.
--   **`resume-core.css`**: Contains the layout engine for the resume container. It handles the `A4` aspect ratio and centering logic.
--   **`print.css`**:
-    -   Forces `isEditMode` to hidden.
-    -   Sets `@page` margins.
-    -   Ensures background graphics are printed using `-webkit-print-color-adjust: exact`.
-
-### Mobile Auto-Scaling
-Mobile responsiveness is achieved via `transform: scale()` instead of standard media queries. This ensures that the resume looks *exactly* like the print version on a small screen. The `useScale` hook calculates the ratio between the window width and the fixed 800px width of the resume.
+### Print Engine (`print.css`)
+-   **Isolation**: All AI components and editing controls use the `.hide-print` class to ensure zero leakage into the final PDF.
+-   **Scaling**: The `handlePrint` function in `App.jsx` temporarily adds a `.mobile-print` class to handle aspect-ratio normalization on mobile browsers.
 
 ---
 
-## 🧩 Component Breakdown
+## ⚠️ Agent Guidelines
 
-### `SectionRenderer.jsx`
-The "Controller" for all resume sections. It handles:
--   Drag-and-drop event listeners.
--   Rendering section headers with "Delete" and "Minimize" controls.
--   Passing data-specific handlers to child sections.
-
-### `EditableText.jsx`
-A context-aware text component.
--   **In Edit Mode:** Renders as a `textarea` or `input`.
--   **In Preview Mode:** Renders as a `span` or `p`.
--   **Feature:** Automatically sanitizes and parses basic Markdown (bolding).
-
----
-
-## ⚠️ Common Pitfalls
-
-1.  **Ref Management:** Templates use `resumeRefs` to measure the height of the content for auto-scaling. If adding a new template, ensure the root element is assigned to a ref.
-2.  **CSS Variable Overrides:** When creating new themes, ensure all variables in `variables.css` are accounted for to prevent invisible text or broken contrasts.
-3.  **Local Storage Size:** Keep images (if any) as URLs or small base64 strings to avoid exceeding the 5MB `localStorage` limit.
+1.  **Strict JSON**: When modifying the AI's response logic, ensure it adheres to the `resumeData.js` schema.
+2.  **Web Worker Imports**: Always use ESM-compatible worker imports with `type: "module"`. For `@huggingface/transformers`, use the CDN URL in the worker for maximum portability and minimal build overhead.
+3.  **Vite Config**: Ensure `worker: { format: "es" }` is set in `vite.config.js` to support top-level imports in workers.
