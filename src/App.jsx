@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "preact/hooks";
+import { h } from "preact";
 import { v4 as uuidv4 } from "uuid";
 import {
   Printer,
@@ -17,233 +18,14 @@ import {
   Sparkles,
 } from "lucide-preact";
 
-const defaultData = {
-  name: "YOUR NAME",
-  profession: "YOUR PROFESSION",
-  email: "youremail@example.com",
-  phone: "(123) 456-7890",
-  location: "Your City",
-  linkedin: "linkedin.com/in/username",
-  portfolio: "yourportfolio.com",
-  summary:
-    "Results-driven professional with a proven track record of delivering impactful solutions and driving growth. Skilled in **problem-solving**, **strategic thinking**, and leading cross-functional teams.",
-  showProfession: true,
-
-  headings: {
-    summary: "SUMMARY",
-    experience: "EXPERIENCE",
-    projects: "PROJECTS",
-    education: "EDUCATION",
-    skills: "SKILLS",
-    certifications: "CERTIFICATIONS",
-  },
-
-  layout: [
-    { id: uuidv4(), type: "summary" },
-    { id: uuidv4(), type: "experience" },
-    { id: uuidv4(), type: "projects" },
-    { id: uuidv4(), type: "education" },
-    { id: uuidv4(), type: "skills" },
-    { id: uuidv4(), type: "certifications" },
-  ],
-
-  experience: [
-    {
-      id: uuidv4(),
-      title: "YOUR JOB TITLE",
-      date: "2022 - Present",
-      company: "Company Name",
-      location: "Your City",
-      bullets: [
-        "Led initiatives that improved **efficiency** and increased revenue.",
-        "Collaborated with cross-functional teams to deliver high-quality results.",
-        "Analyzed data and implemented strategies to optimize performance.",
-      ],
-    },
-    {
-      id: uuidv4(),
-      title: "YOUR JOB TITLE",
-      date: "2019 - 2022",
-      company: "Company Name",
-      location: "Your City",
-      bullets: [
-        "Managed projects from concept to completion.",
-        "Developed solutions that improved customer satisfaction.",
-        "Trained and mentored team members to achieve goals.",
-      ],
-    },
-  ],
-  projects: [
-    {
-      id: uuidv4(),
-      name: "Project Name",
-      link: "example.com",
-      description:
-        "Brief description of the project, technologies used, and outcomes.",
-    },
-  ],
-  education: [
-    {
-      id: uuidv4(),
-      degree: "YOUR DEGREE",
-      date: "2015 - 2019",
-      institution: "University Name",
-      location: "Your City",
-    },
-  ],
-  skills: [
-    { id: uuidv4(), name: "Project Management" },
-    { id: uuidv4(), name: "Data Analysis" },
-    { id: uuidv4(), name: "Leadership" },
-    { id: uuidv4(), name: "Communication" },
-    { id: uuidv4(), name: "Problem Solving" },
-    { id: uuidv4(), name: "Strategy" },
-    { id: uuidv4(), name: "Team Collaboration" },
-    { id: uuidv4(), name: "Microsoft Office" },
-  ],
-  certifications: [
-    {
-      id: uuidv4(),
-      name: "Certification Name",
-      org: "Issuing Organization",
-      year: "2021",
-    },
-  ],
-  contactLayout: ["email", "phone", "location", "linkedin", "portfolio"],
-};
-
-const FONT_SIZES = {
-  small: {
-    "--fs-name": "36px",
-    "--fs-prof": "13px",
-    "--fs-section": "15px",
-    "--fs-job": "13px",
-    "--fs-body": "12px",
-    "--fs-small": "11px",
-    "--fs-icon-md": "14px",
-    "--fs-icon-lg": "18px",
-  },
-  medium: {
-    "--fs-name": "42px",
-    "--fs-prof": "15px",
-    "--fs-section": "17px",
-    "--fs-job": "15px",
-    "--fs-body": "14px",
-    "--fs-small": "13px",
-    "--fs-icon-md": "16px",
-    "--fs-icon-lg": "20px",
-  },
-  large: {
-    "--fs-name": "48px",
-    "--fs-prof": "17px",
-    "--fs-section": "19px",
-    "--fs-job": "17px",
-    "--fs-body": "16px",
-    "--fs-small": "15px",
-    "--fs-icon-md": "18px",
-    "--fs-icon-lg": "22px",
-  },
-};
-
-const FONT_THEMES = {
-  modern: {
-    "--font-heading": "'Montserrat', sans-serif",
-    "--font-body": "'Inter', sans-serif",
-  },
-  classic: {
-    "--font-heading": "'Playfair Display', serif",
-    "--font-body": "'Lora', serif",
-  },
-  minimal: {
-    "--font-heading": "'Roboto', sans-serif",
-    "--font-body": "'Roboto', sans-serif",
-  },
-};
+import { defaultData, FONT_SIZES, FONT_THEMES } from "./constants/resumeData";
+import { parseMarkdown, getCustomFontFamily, updateDocumentTitle } from "./utils/helpers";
+import { usePWA, useScale, useSwipe } from "./utils/hooks";
 
 export default function App() {
   const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
-
   const [dragSource, setDragSource] = useState(null);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
-  const [scale, setScale] = useState(1);
-  const [viewportHeight, setViewportHeight] = useState("auto");
-
-  useEffect(() => {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      window.navigator.standalone === true;
-
-    // If already in standalone mode or dismissed permanently, don't even setup listeners
-    if (
-      isStandalone ||
-      localStorage.getItem("pwaInstallDismissed") === "true"
-    ) {
-      return;
-    }
-
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      // If the prompt fires, it means the app is definitely not installed (e.g. user uninstalled it)
-      localStorage.removeItem("pwaInstalled");
-    };
-
-    const handleAppInstalled = () => {
-      setDeferredPrompt(null);
-      setShowInstallBanner(false);
-      localStorage.setItem("pwaInstalled", "true");
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("appinstalled", handleAppInstalled);
-
-    const timer = setTimeout(() => {
-      const lastShown = localStorage.getItem("pwaInstallLastShown");
-      const now = Date.now();
-      const THREE_DAYS = 3 * 24 * 60 * 60 * 1000;
-
-      if (
-        !localStorage.getItem("pwaInstallDismissed") &&
-        !localStorage.getItem("pwaInstalled") &&
-        !isStandalone &&
-        (!lastShown || now - parseInt(lastShown) > THREE_DAYS)
-      ) {
-        setShowInstallBanner(true);
-        localStorage.setItem("pwaInstallLastShown", now.toString());
-      }
-    }, 20000);
-
-    return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt,
-      );
-      window.removeEventListener("appinstalled", handleAppInstalled);
-      clearTimeout(timer);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response to the install prompt: ${outcome}`);
-      setDeferredPrompt(null);
-    } else {
-      // Fallback for when event hasn't fired or is unavailable
-      alert(
-        "To install PocketResume, please use your browser's 'Add to Home Screen' or 'Install' menu option.",
-      );
-    }
-    setShowInstallBanner(false);
-  };
-
-  const dismissInstall = () => {
-    setShowInstallBanner(false);
-    localStorage.setItem("pwaInstallDismissed", "true");
-  };
 
   const [fontSize, setFontSize] = useState(() => {
     return localStorage.getItem("resumeFontSize") || "medium";
@@ -264,26 +46,6 @@ export default function App() {
   const [template, setTemplate] = useState(() => {
     return localStorage.getItem("resumeTemplate") || "classic";
   });
-
-  useEffect(() => {
-    localStorage.setItem("resumeTheme", theme);
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
-
-  // Request Persistent Storage
-  useEffect(() => {
-    if (navigator.storage && navigator.storage.persist) {
-      navigator.storage.persist().then((persistent) => {
-        if (persistent) {
-          console.log("Persistent storage granted. Data will not be evicted.");
-        } else {
-          console.log(
-            "Persistent storage not granted. Data may be evicted under pressure.",
-          );
-        }
-      });
-    }
-  }, []);
 
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem("resumeData");
@@ -307,38 +69,29 @@ export default function App() {
     return defaultData;
   });
 
+  const { showInstallBanner, handleInstallClick, dismissInstall } = usePWA();
+  const { scale, viewportHeight } = useScale(template, data, resumeRefs);
+  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe(setTemplate);
+
   useEffect(() => {
-    const updateScaleAndHeight = () => {
-      const availableWidth = window.innerWidth - 40;
-      let newScale = 1;
-      if (availableWidth < 800) {
-        newScale = availableWidth / 800;
-        setScale(newScale);
-      } else {
-        setScale(1);
-      }
+    localStorage.setItem("resumeTheme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
-      // Automatically collapse the height of the wrapper to match the visually scaled resume
-      // to prevent huge empty white space at the bottom of mobile screens
-      const activeSlideIndex = template === "classic" ? 1 : 2;
-      const activeContainer = resumeRefs.current[activeSlideIndex];
-      if (activeContainer && availableWidth < 800) {
-        setViewportHeight(`${activeContainer.offsetHeight * newScale}px`);
-      } else {
-        setViewportHeight("auto");
-      }
-    };
-    updateScaleAndHeight();
-    window.addEventListener("resize", updateScaleAndHeight);
-
-    // Track height changes during edit mode
-    const interval = setInterval(updateScaleAndHeight, 500);
-
-    return () => {
-      window.removeEventListener("resize", updateScaleAndHeight);
-      clearInterval(interval);
-    };
-  }, [template, data]);
+  // Request Persistent Storage
+  useEffect(() => {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then((persistent) => {
+        if (persistent) {
+          console.log("Persistent storage granted. Data will not be evicted.");
+        } else {
+          console.log(
+            "Persistent storage not granted. Data may be evicted under pressure.",
+          );
+        }
+      });
+    }
+  }, []);
 
   // Dynamic Google Font Loader
   useEffect(() => {
@@ -364,27 +117,9 @@ export default function App() {
     }
   }, [fontTheme, customFont]);
 
-  // Extract family name for CSS if user provided a full URL
-  const getCustomFontFamily = () => {
-    if (!customFont) return "sans-serif";
-    const match = customFont.match(/family=([^:&]+)/);
-    if (match) return `'${match[1].replace(/\+/g, " ")}', sans-serif`;
-    if (!customFont.includes("http")) return `'${customFont}', sans-serif`;
-    return "sans-serif";
-  };
-
   useEffect(() => {
     localStorage.setItem("resumeData", JSON.stringify(data));
-
-    // Permanently set the page title so native mobile share/print sheets capture the correct filename
-    const userName = (data.name || "USER")
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-    const year = new Date().getFullYear();
-    document.title = `001-${userName}-${year}`;
+    updateDocumentTitle(data);
   }, [data]);
 
   useEffect(() => {
@@ -403,29 +138,22 @@ export default function App() {
     localStorage.setItem("resumeTemplate", template);
   }, [template]);
 
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  // Keyboard Navigation for Templates
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't switch if user is typing in an input or textarea
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+      
+      if (e.key === "ArrowRight" && template === "classic") {
+        setTemplate("modern");
+      } else if (e.key === "ArrowLeft" && template === "modern") {
+        setTemplate("classic");
+      }
+    };
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe || isRightSwipe) {
-      setTemplate((prev) => (prev === "classic" ? "modern" : "classic"));
-    }
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [template]);
 
   const handleChange = (key, value) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -459,17 +187,6 @@ export default function App() {
   const removeBullet = (section, itemIndex, bulletIndex) => {
     const newArray = [...data[section]];
     newArray[itemIndex].bullets.splice(bulletIndex, 1);
-    setData((prev) => ({ ...prev, [section]: newArray }));
-  };
-
-  const moveItem = (section, index, direction) => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === data[section].length - 1) return;
-
-    const newArray = [...data[section]];
-    const temp = newArray[index];
-    newArray[index] = newArray[index + (direction === "up" ? -1 : 1)];
-    newArray[index + (direction === "up" ? -1 : 1)] = temp;
     setData((prev) => ({ ...prev, [section]: newArray }));
   };
 
@@ -532,17 +249,6 @@ export default function App() {
       sessionStorage.clear();
       window.location.reload();
     }
-  };
-
-  const moveSection = (index, direction) => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === data.layout.length - 1) return;
-
-    const newLayout = [...data.layout];
-    const temp = newLayout[index];
-    newLayout[index] = newLayout[index + (direction === "up" ? -1 : 1)];
-    newLayout[index + (direction === "up" ? -1 : 1)] = temp;
-    setData((prev) => ({ ...prev, layout: newLayout }));
   };
 
   const deleteSection = (index) => {
@@ -623,24 +329,6 @@ export default function App() {
     setTimeout(cleanupPrint, 10000); // 10 seconds
   };
 
-  const parseMarkdown = (text) => {
-    if (typeof text !== "string") return text;
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
-        return (
-          <strong
-            key={index}
-            style={{ fontWeight: 700, color: "var(--text-main)" }}
-          >
-            {part.slice(2, -2)}
-          </strong>
-        );
-      }
-      return part;
-    });
-  };
-
   const EditableText = ({
     tag: Tag = "span",
     className,
@@ -706,7 +394,7 @@ export default function App() {
         />
       );
     }
-    return <Tag className={className}>{parseMarkdown(value)}</Tag>;
+    return <Tag className={className}>{parseMarkdown(value, h)}</Tag>;
   };
 
   const Controls = ({ onDelete }) => {
@@ -1205,8 +893,8 @@ export default function App() {
   const dynamicFontTheme =
     fontTheme === "custom"
       ? {
-          "--font-heading": getCustomFontFamily(),
-          "--font-body": getCustomFontFamily(),
+          "--font-heading": getCustomFontFamily(customFont),
+          "--font-body": getCustomFontFamily(customFont),
         }
       : FONT_THEMES[fontTheme];
 
@@ -1457,7 +1145,7 @@ export default function App() {
                   )}
                   <div
                     className="contact-info"
-                    style={{ flexWrap: "wrap", gap: "10px 15px" }}
+                    style={{ flexWrap: "wrap", gap: "10px 1560px" }}
                   >
                     {data.contactLayout.map((key, cIdx) => {
                       const value = data[key];

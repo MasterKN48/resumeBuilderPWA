@@ -1133,7 +1133,7 @@ textarea.edit-input {
   .resume-container {
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 10mm 15mm !important;
+    padding: 4mm 10mm !important;
     width: 210mm !important;
     min-height: 297mm !important;
     border-radius: 0 !important;
@@ -1618,10 +1618,12 @@ textarea.edit-input {
   /* Slider handles centering */
   width: 100% !important;
 }
+
 /* Hide Scrollbar */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
