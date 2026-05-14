@@ -3,32 +3,79 @@
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=github)](https://masterkn48.github.io/resumeBuilderPWA/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange?style=for-the-badge&logo=pwa)](https://masterkn48.github.io/resumeBuilderPWA/)
 
-Easy, instant resume management with full offline capabilities. Build your professional resume with a live preview, drag-and-drop sections, and flawless PDF export.
+PocketResume is a modern, interactive resume builder designed for speed, flexibility, and professional results. It features a live side-by-side preview, multiple templates, and flawless PDF export capabilities, all packaged as a lightweight PWA.
 
 [**🌐 Launch App**](https://masterkn48.github.io/resumeBuilderPWA/)
 
-## 📸 Screenshots
+---
 
-<p align="center">
-  <img src="public/1.jpg" width="30%" alt="Editor View" />
-  <img src="public/2.jpg" width="30%" alt="Print Preview" />
-</p>
+## 🏗️ Project Architecture
 
-<p align="center">
-  <img src="public/screenshot.png" width="80%" alt="Desktop Preview" />
-</p>
+The project is built using **Preact** for high performance and a small bundle size. It follows a modular architecture where data management, layout logic, and UI components are strictly separated.
+
+### Core Philosophy
+1.  **Data-Driven UI:** The entire resume is represented by a single JSON object.
+2.  **Hook-Based Logic:** All business logic (CRUD, Layout, PWA) is encapsulated in custom hooks.
+3.  **Style Isolation:** Modular CSS ensures that templates can coexist without style leakage.
+
+---
+
+## 📂 File Structure & Details
+
+### `/src`
+The heart of the application.
+
+-   **`App.jsx`**: The main entry point. It orchestrates the hooks and renders the high-level layout (FloatingBar, Viewport, Templates).
+-   **`/components`**:
+    -   **`SectionRenderer.jsx`**: A high-order component that wraps individual sections, providing drag-and-drop handles and editing controls.
+    -   **`/sections`**: Individual resume modules (e.g., `ExperienceSection.jsx`, `SkillsSection.jsx`). Each section is designed to be standalone.
+    -   **`/shared`**: Reusable UI elements like `FloatingBar.jsx`, `EditableText.jsx`, and `InstallBanner.jsx`.
+    -   **`/templates`**: High-level layout wrappers (`ClassicTemplate.jsx`, `ModernTemplate.jsx`) that define the visual structure of the resume.
+-   **`/hooks`**:
+    -   **`useResumeData.js`**: Manages the main state, local storage persistence, and data updates.
+    -   **`useSettings.js`**: Handles theme, font sizing, and template switching.
+    -   **`useLayoutManager.js`**: Manages section ordering (drag-and-drop), visibility, and page breaks.
+-   **`/styles`**:
+    -   **`variables.css`**: Centralized design tokens (colors, spacing, shadows).
+    -   **`resume-core.css`**: Shared styles for resume elements across all templates.
+    -   **`print.css`**: Specialized media queries for pixel-perfect PDF export.
+    -   **`edit-mode.css`**: Styles specifically for the interactive editor state.
+-   **`/constants`**:
+    -   **`resumeData.js`**: Defines the default schema and initial state for a new resume.
+
+---
 
 ## ✨ Features
 
-- **PWA & Offline:** Install natively on any device; works without internet.
-- **Dynamic Layout:** Drag & drop sections to rearrange your resume.
-- **Smart Editing:** Markdown bolding, custom page breaks, and auto-saving.
-- **Print Perfect:** 1:1 PDF fidelity with customizable margins and typography.
-- **Conditional UI:** Unused fields (LinkedIn, Portfolio) hide automatically.
+-   **PWA & Offline:** Works without an internet connection and can be installed as a native app on iOS, Android, and Desktop.
+-   **Live Templates:** Instantly switch between "Classic" and "Modern" layouts with a swipe or keyboard shortcut.
+-   **Interactive Drag & Drop:** Rearrange sections on the fly using native HTML5 drag events.
+-   **Smart Content Editing:** Markdown-style bolding support and automatic field hiding for empty data.
+-   **Dynamic Scaling:** Mobile-first design that auto-scales the resume to fit any screen size while maintaining layout integrity.
+-   **Custom Typography:** Integration with Google Fonts for professional typefaces.
+-   **Privacy First:** All data is stored locally in your browser's `localStorage`. No accounts or server-side storage required.
 
-## Development
+---
 
-This project uses `bun` as its primary package manager.
+## 🛠️ Key Methods & Logic
+
+### Data Persistence
+Data is automatically synced to `localStorage` on every change via `useResumeData`. This ensures that work is never lost, even if the tab is closed.
+
+### Print Logic (`handlePrint`)
+The application uses a custom print handler that:
+1.  Disables Edit Mode for a clean export.
+2.  Applies specialized scaling for mobile devices to ensure the PDF remains A4/Letter size regardless of the viewport.
+3.  Injects a `mobile-print` class to handle browser-specific print quirks.
+
+### Layout Management
+The `useLayoutManager` hook provides a `layout` array which is a list of section IDs. The `SectionRenderer` uses this array to determine the visual order of components, allowing for seamless reordering.
+
+---
+
+## 🚀 Development
+
+This project uses `bun` as its primary package manager and `vite` for building.
 
 ```bash
 # Install dependencies
@@ -41,26 +88,13 @@ bun run dev
 bun run build
 ```
 
-## Deployment to GitHub Pages
+## 📄 Best Results for Printing
 
-This repository is pre-configured to easily deploy to GitHub Pages.
-
-1. Ensure the `base: './'` is set in your `vite.config.js`.
-2. Run the deploy script:
-
-```bash
-bun run deploy
-```
-
-This will automatically build your application and push the compiled `dist` folder to the `gh-pages` branch, making it live on the web!
+1.  **Destination:** Save as PDF
+2.  **Margins:** Set to **Default** (The app handles its own 15mm margins).
+3.  **Options:** Ensure **Background Graphics** is **checked**.
+4.  **Paper Size:** A4 or Letter.
 
 ---
 
-## Best Results for Printing
-
-To get a perfect PDF export every time, follow these settings in your browser's print dialog:
-
-1. **Destination:** Save as PDF
-2. **Margins:** Set to **Default** or **None** (The app handles its own 15mm margins).
-3. **Options:** Ensure **Background Graphics** is **checked** (important for accent colors and skill chips).
-4. **Paper Size:** A4 or Letter (both are supported by the dynamic layout).
+Developed with ❤️ by [MasterKN48](https://github.com/MasterKN48)
