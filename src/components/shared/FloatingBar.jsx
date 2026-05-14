@@ -1,0 +1,169 @@
+import { h, Fragment } from "preact";
+import {
+  Palette,
+  RefreshCw,
+  Check,
+  Edit3,
+  HelpCircle,
+  Sparkles,
+  Printer,
+} from "lucide-preact";
+
+export const FloatingBar = ({
+  isEditMode,
+  setIsEditMode,
+  resetData,
+  handlePrint,
+  fontTheme,
+  setFontTheme,
+  fontSize,
+  setFontSize,
+  customFont,
+  setCustomFont,
+}) => {
+  return (
+    <div className="floating-bar hide-print">
+      {isEditMode && (
+        <button
+          className="action-btn"
+          popovertarget="styling-menu"
+          title="Styling Settings"
+        >
+          <Palette size={20} />
+        </button>
+      )}
+
+      <div id="styling-menu" popover="auto" className="dock-popover">
+        <div className="dock-settings">
+          <select
+            className="action-select"
+            value={fontTheme}
+            onChange={(e) => setFontTheme(e.target.value)}
+            title="Font Family"
+          >
+            <option value="modern">Modern</option>
+            <option value="classic">Classic</option>
+            <option value="minimal">Minimal</option>
+            <option value="custom">Custom</option>
+          </select>
+
+          {fontTheme === "custom" && (
+            <input
+              type="text"
+              className="custom-font-input"
+              placeholder="Google Font Name"
+              value={customFont}
+              onChange={(e) => setCustomFont(e.target.value)}
+            />
+          )}
+
+          <select
+            className="action-select"
+            value={fontSize}
+            onChange={(e) => setFontSize(e.target.value)}
+            title="Font Size"
+          >
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+      </div>
+
+      {isEditMode && <div className="dock-divider"></div>}
+
+      <div className="top-bar-group">
+        {isEditMode && (
+          <button
+            className="action-btn danger"
+            onClick={resetData}
+            title="Reset Data"
+          >
+            <RefreshCw size={20} />
+          </button>
+        )}
+        <button
+          className={`action-btn ${isEditMode ? "active" : ""}`}
+          onClick={() => setIsEditMode(!isEditMode)}
+          title={isEditMode ? "Finish Editing" : "Edit Resume"}
+        >
+          {isEditMode ? <Check size={20} /> : <Edit3 size={20} />}
+        </button>
+
+        {isEditMode && (
+          <>
+            <button
+              className="action-btn"
+              popovertarget="help-menu"
+              title="Editing Tips"
+            >
+              <HelpCircle size={20} />
+            </button>
+            <div
+              id="help-menu"
+              popover="auto"
+              className="dock-popover help-popover"
+            >
+              <div className="dock-settings help-content">
+                <h3
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    margin: "0 0 12px 0",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    color: "var(--text-main)",
+                  }}
+                >
+                  <Edit3 size={16} /> Editing Tips
+                </h3>
+                <ul
+                  style={{
+                    margin: 0,
+                    padding: "0 0 0 18px",
+                    fontSize: "12px",
+                    color: "var(--text-secondary)",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  <li>
+                    <strong>Delete:</strong> Click trash icon to clear fields.
+                  </li>
+                  <li>
+                    <strong>Bold:</strong> Wrap text in double asterisks (e.g.{" "}
+                    <code>**bold**</code>).
+                  </li>
+                  <li>
+                    <strong>Reorder:</strong> Hover items to reveal drag
+                    controls.
+                  </li>
+                  <li>
+                    <strong>Fonts:</strong> Paste a Google Font name (e.g.{" "}
+                    <code>Oswald</code>).
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </>
+        )}
+
+        <button
+          className="action-btn"
+          title="AI Chat Bot (Coming Soon)"
+          style={{ color: "var(--accent-color)" }}
+        >
+          <Sparkles size={20} />
+        </button>
+
+        <button
+          className="action-btn"
+          onClick={handlePrint}
+          title="Print / Export PDF"
+        >
+          <Printer size={20} />
+        </button>
+      </div>
+    </div>
+  );
+};

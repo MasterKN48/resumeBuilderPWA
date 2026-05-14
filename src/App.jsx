@@ -2,25 +2,21 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { h } from "preact";
 import { v4 as uuidv4 } from "uuid";
 import {
-  Printer,
-  Edit3,
   Trash2,
   Plus,
-  Check,
-  FilePlus,
   GripVertical,
-  RefreshCw,
-  HelpCircle,
-  Palette,
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
 } from "lucide-preact";
 
 import { defaultData, FONT_SIZES, FONT_THEMES } from "./constants/resumeData";
-import { parseMarkdown, getCustomFontFamily, updateDocumentTitle } from "./utils/helpers";
+import { getCustomFontFamily, updateDocumentTitle } from "./utils/helpers";
 import { usePWA, useScale, useSwipe } from "./utils/hooks";
+
+// Shared Components
+import { EditableText } from "./components/shared/EditableText";
+import { Controls, SectionControls } from "./components/shared/Controls";
+import { FloatingBar } from "./components/shared/FloatingBar";
+import { TemplateNavButtons, IndicatorDots } from "./components/shared/TemplateNav";
+import { InstallBanner } from "./components/shared/InstallBanner";
 
 export default function App() {
   const resumeRefs = useRef({});
@@ -329,129 +325,13 @@ export default function App() {
     setTimeout(cleanupPrint, 10000); // 10 seconds
   };
 
-  const EditableText = ({
-    tag: Tag = "span",
-    className,
-    value,
-    onChange,
-    multiline = false,
-    placeholder = "",
-  }) => {
-    if (isEditMode) {
-      if (multiline) {
-        const wordCount = value
-          ? value
-              .trim()
-              .split(/\s+/)
-              .filter((word) => word.length > 0).length
-          : 0;
-        return (
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <textarea
-              className={`edit-input ${className}`}
-              value={value}
-              placeholder={placeholder}
-              onChange={(e) => onChange(e.target.value)}
-              rows={4}
-            />
-            <div
-              className="word-counter hide-print"
-              style={{
-                position: "absolute",
-                bottom: "10px",
-                right: "12px",
-                fontSize: "10px",
-                fontWeight: "700",
-                color: "var(--accent-color)",
-                opacity: 0.8,
-                background: "var(--pill-bg)",
-                padding: "2px 6px",
-                borderRadius: "4px",
-                pointerEvents: "none",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}
-            >
-              {wordCount} {wordCount === 1 ? "Word" : "Words"}
-            </div>
-          </div>
-        );
-      }
-      return (
-        <input
-          type="text"
-          className={`edit-input ${className}`}
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      );
-    }
-    return <Tag className={className}>{parseMarkdown(value, h)}</Tag>;
-  };
-
-  const Controls = ({ onDelete }) => {
-    if (!isEditMode) return null;
-    return (
-      <div className="item-controls hide-print">
-        <div
-          className="flex gap-1"
-          style={{ display: "flex", gap: "4px", alignItems: "center" }}
-        >
-          <div className="sec-btn drag-handle" title="Drag to reorder">
-            <GripVertical size={14} />
-          </div>
-          <button
-            onClick={onDelete}
-            title="Delete"
-            style={{ color: "#ef4444" }}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const SectionControls = ({ onDelete, onAddBreak }) => {
-    if (!isEditMode) return null;
-    return (
-      <div className="section-controls hide-print">
-        <div
-          className="flex gap-2"
-          style={{ display: "flex", gap: "8px", alignItems: "center" }}
-        >
-          <div className="sec-btn drag-handle" title="Drag to reorder">
-            <GripVertical size={14} />
-          </div>
-          <button
-            className="sec-btn"
-            onClick={onDelete}
-            title="Delete Section"
-            style={{ color: "#ef4444" }}
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-        <button className="sec-btn break-btn" onClick={onAddBreak}>
-          <FilePlus size={14} /> Add Page Break Below
-        </button>
-      </div>
-    );
-  };
 
   const renderSection = (sec, index) => {
     const commonProps = {
       index,
       onDelete: () => deleteSection(index),
       onAddBreak: () => insertPageBreak(index),
+      isEditMode,
     };
 
     const sectionProps = {
@@ -471,6 +351,7 @@ export default function App() {
             <SectionControls {...commonProps} />
             <div className="section-header">
               <EditableText
+                isEditMode={isEditMode}
                 tag="h3"
                 className="section-title"
                 value={data.headings.summary}
@@ -479,6 +360,7 @@ export default function App() {
             </div>
             <div className="section-content">
               <EditableText
+                isEditMode={isEditMode}
                 tag="p"
                 value={data.summary}
                 onChange={(val) => handleChange("summary", val)}
@@ -494,6 +376,7 @@ export default function App() {
             <SectionControls {...commonProps} />
             <div className="section-header">
               <EditableText
+                isEditMode={isEditMode}
                 tag="h3"
                 className="section-title"
                 value={data.headings.experience}
@@ -514,6 +397,7 @@ export default function App() {
                   <Controls onDelete={() => deleteItem("experience", eIdx)} />
                   <div className="experience-header">
                     <EditableText
+                isEditMode={isEditMode}
                       tag="h4"
                       className="job-title"
                       value={exp.title}
@@ -522,6 +406,7 @@ export default function App() {
                       }
                     />
                     <EditableText
+                isEditMode={isEditMode}
                       tag="span"
                       className="date"
                       value={exp.date}
@@ -532,6 +417,7 @@ export default function App() {
                   </div>
                   <div className="company-location">
                     <EditableText
+                isEditMode={isEditMode}
                       value={exp.company}
                       onChange={(val) =>
                         handleArrayChange("experience", eIdx, "company", val)
@@ -539,6 +425,7 @@ export default function App() {
                     />
                     &nbsp;&bull;&nbsp;
                     <EditableText
+                isEditMode={isEditMode}
                       value={exp.location}
                       onChange={(val) =>
                         handleArrayChange("experience", eIdx, "location", val)
@@ -549,6 +436,7 @@ export default function App() {
                     {exp.bullets.map((bullet, bIdx) => (
                       <li key={bIdx} className="bullet-item">
                         <EditableText
+                isEditMode={isEditMode}
                           value={bullet}
                           onChange={(val) =>
                             handleBulletChange("experience", eIdx, bIdx, val)
@@ -596,6 +484,7 @@ export default function App() {
             <SectionControls {...commonProps} />
             <div className="section-header">
               <EditableText
+                isEditMode={isEditMode}
                 tag="h3"
                 className="section-title"
                 value={data.headings.projects}
@@ -616,6 +505,7 @@ export default function App() {
                   <Controls onDelete={() => deleteItem("projects", pIdx)} />
                   <div className="experience-header">
                     <EditableText
+                isEditMode={isEditMode}
                       tag="h4"
                       className="job-title"
                       value={proj.name}
@@ -637,6 +527,7 @@ export default function App() {
                     >
                       {isEditMode ? (
                         <EditableText
+                isEditMode={isEditMode}
                           value={proj.link}
                           onChange={(val) =>
                             handleArrayChange("projects", pIdx, "link", val)
@@ -664,6 +555,7 @@ export default function App() {
                   )}
 
                   <EditableText
+                isEditMode={isEditMode}
                     tag="p"
                     value={proj.description}
                     onChange={(val) =>
@@ -691,6 +583,7 @@ export default function App() {
             <SectionControls {...commonProps} />
             <div className="section-header">
               <EditableText
+                isEditMode={isEditMode}
                 tag="h3"
                 className="section-title"
                 value={data.headings.education}
@@ -711,6 +604,7 @@ export default function App() {
                   <Controls onDelete={() => deleteItem("education", eIdx)} />
                   <div className="experience-header">
                     <EditableText
+                isEditMode={isEditMode}
                       tag="h4"
                       className="job-title"
                       value={edu.degree}
@@ -719,6 +613,7 @@ export default function App() {
                       }
                     />
                     <EditableText
+                isEditMode={isEditMode}
                       tag="span"
                       className="date"
                       value={edu.date}
@@ -729,6 +624,7 @@ export default function App() {
                   </div>
                   <div className="company-location">
                     <EditableText
+                isEditMode={isEditMode}
                       value={edu.institution}
                       onChange={(val) =>
                         handleArrayChange("education", eIdx, "institution", val)
@@ -736,6 +632,7 @@ export default function App() {
                     />
                     &nbsp;&bull;&nbsp;
                     <EditableText
+                isEditMode={isEditMode}
                       value={edu.location}
                       onChange={(val) =>
                         handleArrayChange("education", eIdx, "location", val)
@@ -762,6 +659,7 @@ export default function App() {
             <SectionControls {...commonProps} />
             <div className="section-header">
               <EditableText
+                isEditMode={isEditMode}
                 tag="h3"
                 className="section-title"
                 value={data.headings.skills}
@@ -781,6 +679,7 @@ export default function App() {
                     onDragEnd={() => setDragSource(null)}
                   >
                     <EditableText
+                isEditMode={isEditMode}
                       value={skill.name}
                       onChange={(val) =>
                         handleArrayChange("skills", sIdx, "name", val)
@@ -816,6 +715,7 @@ export default function App() {
             <SectionControls {...commonProps} />
             <div className="section-header">
               <EditableText
+                isEditMode={isEditMode}
                 tag="h3"
                 className="section-title"
                 value={data.headings.certifications}
@@ -835,9 +735,11 @@ export default function App() {
                     onDragEnd={() => setDragSource(null)}
                   >
                     <Controls
+                    isEditMode={isEditMode}
                       onDelete={() => deleteItem("certifications", cIdx)}
                     />
                     <EditableText
+                isEditMode={isEditMode}
                       value={cert.name}
                       onChange={(val) =>
                         handleArrayChange("certifications", cIdx, "name", val)
@@ -845,6 +747,7 @@ export default function App() {
                     />
                     &nbsp;&bull;&nbsp;
                     <EditableText
+                isEditMode={isEditMode}
                       value={cert.org}
                       onChange={(val) =>
                         handleArrayChange("certifications", cIdx, "org", val)
@@ -852,6 +755,7 @@ export default function App() {
                     />
                     &nbsp;&bull;&nbsp;
                     <EditableText
+                isEditMode={isEditMode}
                       value={cert.year}
                       onChange={(val) =>
                         handleArrayChange("certifications", cIdx, "year", val)
@@ -901,171 +805,22 @@ export default function App() {
   return (
     <>
       <div className="perspective-grid hide-print"></div>
-      <div className="floating-bar hide-print">
-        {isEditMode && (
-          <button
-            className="action-btn"
-            popovertarget="styling-menu"
-            title="Styling Settings"
-          >
-            <Palette size={20} />
-          </button>
-        )}
-
-        <div id="styling-menu" popover="auto" className="dock-popover">
-          <div className="dock-settings">
-            <select
-              className="action-select"
-              value={fontTheme}
-              onChange={(e) => setFontTheme(e.target.value)}
-              title="Font Family"
-            >
-              <option value="modern">Modern</option>
-              <option value="classic">Classic</option>
-              <option value="minimal">Minimal</option>
-              <option value="custom">Custom</option>
-            </select>
-
-            {fontTheme === "custom" && (
-              <input
-                type="text"
-                className="custom-font-input"
-                placeholder="Google Font Name"
-                value={customFont}
-                onChange={(e) => setCustomFont(e.target.value)}
-              />
-            )}
-
-            <select
-              className="action-select"
-              value={fontSize}
-              onChange={(e) => setFontSize(e.target.value)}
-              title="Font Size"
-            >
-              <option value="small">Small</option>
-              <option value="medium">Medium</option>
-              <option value="large">Large</option>
-            </select>
-          </div>
-        </div>
-
-        {isEditMode && <div className="dock-divider"></div>}
-
-        <div className="top-bar-group">
-          {isEditMode && (
-            <button
-              className="action-btn danger"
-              onClick={resetData}
-              title="Reset Data"
-            >
-              <RefreshCw size={20} />
-            </button>
-          )}
-          <button
-            className={`action-btn ${isEditMode ? "active" : ""}`}
-            onClick={() => setIsEditMode(!isEditMode)}
-            title={isEditMode ? "Finish Editing" : "Edit Resume"}
-          >
-            {isEditMode ? <Check size={20} /> : <Edit3 size={20} />}
-          </button>
-
-          {isEditMode && (
-            <>
-              <button
-                className="action-btn"
-                popovertarget="help-menu"
-                title="Editing Tips"
-              >
-                <HelpCircle size={20} />
-              </button>
-              <div
-                id="help-menu"
-                popover="auto"
-                className="dock-popover help-popover"
-              >
-                <div className="dock-settings help-content">
-                  <h3
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      margin: "0 0 12px 0",
-                      fontSize: "14px",
-                      fontWeight: "700",
-                      color: "var(--text-main)",
-                    }}
-                  >
-                    <Edit3 size={16} /> Editing Tips
-                  </h3>
-                  <ul
-                    style={{
-                      margin: 0,
-                      padding: "0 0 0 18px",
-                      fontSize: "12px",
-                      color: "var(--text-secondary)",
-                      lineHeight: "1.6",
-                    }}
-                  >
-                    <li>
-                      <strong>Delete:</strong> Click trash icon to clear fields.
-                    </li>
-                    <li>
-                      <strong>Bold:</strong> Wrap text in double asterisks (e.g.{" "}
-                      <code>**bold**</code>).
-                    </li>
-                    <li>
-                      <strong>Reorder:</strong> Hover items to reveal drag
-                      controls.
-                    </li>
-                    <li>
-                      <strong>Fonts:</strong> Paste a Google Font name (e.g.{" "}
-                      <code>Oswald</code>).
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </>
-          )}
-
-          <button
-            className="action-btn"
-            title="AI Chat Bot (Coming Soon)"
-            style={{ color: "var(--accent-color)" }}
-          >
-            <Sparkles size={20} />
-          </button>
-
-          <button
-            className="action-btn"
-            onClick={handlePrint}
-            title="Print / Export PDF"
-          >
-            <Printer size={20} />
-          </button>
-        </div>
-      </div>
+      <FloatingBar
+        isEditMode={isEditMode}
+        setIsEditMode={setIsEditMode}
+        resetData={resetData}
+        handlePrint={handlePrint}
+        fontTheme={fontTheme}
+        setFontTheme={setFontTheme}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        customFont={customFont}
+        setCustomFont={setCustomFont}
+      />
 
       {/* Wrapper for Side Arrows and Resume */}
       <div className="resume-wrapper">
-        <button
-          className="template-nav-btn prev-btn hide-print"
-          onClick={() =>
-            setTemplate((prev) => (prev === "classic" ? "modern" : "classic"))
-          }
-          title="Previous Template"
-        >
-          <ChevronLeft size={32} />
-        </button>
-
-        <button
-          className="template-nav-btn next-btn hide-print"
-          onClick={() =>
-            setTemplate((prev) => (prev === "classic" ? "modern" : "classic"))
-          }
-          title="Next Template"
-        >
-          <ChevronRight size={32} />
-        </button>
+        <TemplateNavButtons setTemplate={setTemplate} />
 
         <div
           className="resume-slider-viewport hide-scrollbar"
@@ -1104,6 +859,7 @@ export default function App() {
               >
                 <header className="header relative-box sec-box">
                   <EditableText
+                isEditMode={isEditMode}
                     tag="h1"
                     className="name"
                     value={data.name}
@@ -1119,6 +875,7 @@ export default function App() {
                       }}
                     >
                       <EditableText
+                        isEditMode={isEditMode}
                         tag="h2"
                         className="profession"
                         value={data.profession}
@@ -1145,7 +902,7 @@ export default function App() {
                   )}
                   <div
                     className="contact-info"
-                    style={{ flexWrap: "wrap", gap: "10px 1560px" }}
+                    style={{ flexWrap: "wrap", gap: "10px 16px" }}
                   >
                     {data.contactLayout.map((key, cIdx) => {
                       const value = data[key];
@@ -1195,6 +952,7 @@ export default function App() {
                             {labels[key]}
                           </span>
                           <EditableText
+                            isEditMode={isEditMode}
                             value={value}
                             onChange={(val) => handleChange(key, val)}
                             placeholder={
@@ -1234,12 +992,14 @@ export default function App() {
                   <aside className="modern-sidebar">
                     <div className="modern-sidebar-top">
                       <EditableText
+                        isEditMode={isEditMode}
                         tag="h1"
                         className="modern-name"
                         value={data.name}
                         onChange={(val) => handleChange("name", val)}
                       />
                       <EditableText
+                        isEditMode={isEditMode}
                         tag="h2"
                         className="modern-profession"
                         value={data.profession}
@@ -1265,6 +1025,7 @@ export default function App() {
                                 {labels[key]}
                               </span>
                               <EditableText
+                            isEditMode={isEditMode}
                                 className="modern-contact-value"
                                 value={value}
                                 onChange={(val) => handleChange(key, val)}
@@ -1308,44 +1069,13 @@ export default function App() {
         </div>
       </div>
 
-      <div className="template-indicator hide-print">
-        <div
-          className={`indicator-dot ${template === "classic" ? "active" : ""}`}
-          onClick={() => setTemplate("classic")}
-          style={{ cursor: "pointer" }}
-        ></div>
-        <div
-          className={`indicator-dot ${template === "modern" ? "active" : ""}`}
-          onClick={() => setTemplate("modern")}
-          style={{ cursor: "pointer" }}
-        ></div>
-      </div>
+      <IndicatorDots template={template} setTemplate={setTemplate} />
 
-      {showInstallBanner && (
-        <div className="install-banner hide-print">
-          <div className="install-content">
-            <div className="install-header">
-              <div className="install-icon">
-                <Download size={28} />
-              </div>
-              <div className="install-text">
-                <h4>Install PocketResume</h4>
-                <p>
-                  Keep your resume in your pocket. Modify anytime, anywhere.
-                </p>
-              </div>
-            </div>
-            <div className="install-actions">
-              <button className="install-btn" onClick={handleInstallClick}>
-                Install Now
-              </button>
-              <button className="dismiss-btn" onClick={dismissInstall}>
-                Maybe Later
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <InstallBanner
+        showInstallBanner={showInstallBanner}
+        handleInstallClick={handleInstallClick}
+        dismissInstall={dismissInstall}
+      />
     </>
   );
 }
