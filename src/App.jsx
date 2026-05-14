@@ -180,7 +180,6 @@ export default function App() {
     // If already in standalone mode or dismissed permanently, don't even setup listeners
     if (
       isStandalone ||
-      localStorage.getItem("pwaInstalled") === "true" ||
       localStorage.getItem("pwaInstallDismissed") === "true"
     ) {
       return;
@@ -189,6 +188,8 @@ export default function App() {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      // If the prompt fires, it means the app is definitely not installed (e.g. user uninstalled it)
+      localStorage.removeItem("pwaInstalled");
     };
 
     const handleAppInstalled = () => {
