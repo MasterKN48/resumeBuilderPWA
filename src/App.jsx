@@ -21,7 +21,6 @@ import { FileText } from "lucide-preact";
 // AI Component
 import { AIContainer } from "./components/AI/AIContainer";
 
-
 // Template Components
 import { ClassicTemplate } from "./components/templates/ClassicTemplate";
 import { ModernTemplate } from "./components/templates/ModernTemplate";
@@ -31,6 +30,7 @@ export default function App() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [parseProgress, setParseProgress] = useState(0);
+  const [parsingStatus, setParsingStatus] = useState("");
 
   // Core Data Management
   const {
@@ -129,7 +129,8 @@ export default function App() {
 
   const handlePrint = () => {
     setIsEditMode(false);
-    const isMobile = (document.documentElement.clientWidth || window.innerWidth) < 840;
+    const isMobile =
+      (document.documentElement.clientWidth || window.innerWidth) < 840;
     if (isMobile) {
       document.body.classList.add("mobile-print");
     }
@@ -148,41 +149,70 @@ export default function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File size exceeds 5MB limit.");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size exceeds 10MB limit.");
       return;
     }
 
     setIsParsing(true);
-    setParseProgress(0);
+    setParseProgress(5);
+    setParsingStatus("Initializing...");
+    const setStatus = (msg) => {
+      setParsingStatus(msg);
+      // Update progress based on status keywords
+      if (msg.includes("Downloading")) setParseProgress(20);
+      if (msg.includes("Analyzing")) setParseProgress(60);
+    };
 
     try {
       const { parsePdf } = await import("./utils/pdfParser");
-      const { parseResumeText } = await import("./utils/resumeParser");
-      
+      const { parseResumeText, parseResumeWithAI } =
+        await import("./utils/resumeParser");
+
+      // 1. Extract raw text
       const text = await parsePdf(file, (progress) => {
-        setParseProgress(progress);
+        setParseProgress(5 + progress * 0.4); // 5% to 45% for PDF extraction
       });
 
-      console.log("%cPDF Parsing Complete!", "color: #d86244; font-weight: bold; font-size: 16px;");
-      console.log("%cRaw Extracted Text:", "color: #94a3b8; font-weight: bold; font-size: 14px;");
+      console.log("%cPDF Text Extracted", "color: #94a3b8; font-weight: bold;");
       console.log(text);
-      
-      const parsedJson = parseResumeText(text);
-      console.log("%cSemantic Extraction Result:", "color: #40e0d0; font-weight: bold; font-size: 14px;");
-      console.log(parsedJson);
-      
-      alert("Resume parsed successfully! Check the browser console for both raw text and structured JSON.");
-    } catch (error) {
-      console.error("PDF parsing error:", error);
-      alert("Error parsing PDF. Please make sure it's a valid PDF file.");
-    } finally {
-      setIsParsing(true); // Keep it briefly for the "Complete" state feel
+      // 2. Parse with AI
+      let parsedJson;
+      try {
+        setParseProgress(50);
+        parsedJson = await parseResumeWithAI(text, setStatus);
+      } catch (aiError) {
+        console.warn("AI Parsing failed, falling back to heuristics:", aiError);
+        parsedJson = parseResumeText(text);
+      }
+
+      // 3. Finalize and Save
       setParseProgress(100);
+
+      // Merge with default structure to ensure no missing fields
+      const finalData = {
+        ...data,
+        ...parsedJson,
+        // Ensure we don't overwrite internal settings unless they are in the parsed data
+        headings: { ...data.headings, ...(parsedJson.headings || {}) },
+        layout: parsedJson.layout || data.layout,
+      };
+
+      setData(finalData);
+      setIsEditMode(true);
+
+      // alert(
+      //   "Resume imported successfully! Our AI has extracted your details into the editor.",
+      // );
+    } catch (error) {
+      console.error("Critical parsing error:", error);
+      alert("Error parsing PDF. Please try again or use a different file.");
+    } finally {
       setTimeout(() => {
         setIsParsing(false);
         setParseProgress(0);
-      }, 800);
+        setParsingStatus("");
+      }, 1000);
     }
   };
 
@@ -316,20 +346,29 @@ export default function App() {
               <div className="parsing-icon-scan"></div>
             </div>
             <div className="parsing-text">
-              {parseProgress < 100 ? "Analyzing Resume..." : "Analysis Complete!"}
+              {parseProgress < 100
+                ? "Analyzing Resume..."
+                : "Analysis Complete!"}
             </div>
             <div className="parsing-subtext">
-              {parseProgress < 100 
-                ? "Our AI is extracting your professional experience..." 
-                : "Text extracted successfully!"}
+              {parsingStatus ||
+                (parseProgress < 100
+                  ? "Our AI is extracting your professional experience..."
+                  : "Text extracted successfully!")}
             </div>
             <div className="progress-bar-container">
-              <div 
-                className="progress-bar-fill" 
+              <div
+                className="progress-bar-fill"
                 style={{ width: `${parseProgress}%` }}
               ></div>
             </div>
-            <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-color)' }}>
+            <div
+              style={{
+                fontSize: "12px",
+                fontWeight: "bold",
+                color: "var(--accent-color)",
+              }}
+            >
               {Math.round(parseProgress)}%
             </div>
           </div>

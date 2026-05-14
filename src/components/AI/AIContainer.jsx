@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { AIChatButton } from "./AIChatButton";
 import { AIChatWindow } from "./AIChatWindow";
 import { AI_CONFIG } from "../../constants/aiConfig";
+import { SUMMARIZER_PROMPT } from "../../constants/prompts";
 import { minifyResumeData } from "../../utils/aiUtils";
 import "../../styles/ai-chatbot.css";
 
@@ -184,8 +185,7 @@ ${AI_CONFIG.SYSTEM_PROMPT}
       worker.current.postMessage({
         type: "summarize",
         model_id: AI_CONFIG.MODEL_ID,
-        system_prompt:
-          "You are a summarizer. Provide a extremely concise 1-sentence summary of the following conversation history. Do not use conversational filler.",
+        system_prompt: SUMMARIZER_PROMPT,
         messages: messages.slice(1), // Skip the initial greeting
       });
       return;

@@ -101,7 +101,6 @@ self.addEventListener("message", async (event) => {
       });
 
       const finalContent = output[0].generated_text.at(-1).content;
-      console.log("### finalContent ###\n", finalContent);
       self.postMessage({
         type: "summarize_complete",
         content: finalContent,
