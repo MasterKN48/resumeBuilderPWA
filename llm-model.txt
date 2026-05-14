@@ -1,0 +1,100 @@
+## qwen3 0.6 onnx docs
+
+import { pipeline, TextStreamer } from "@huggingface/transformers";
+
+// Create a text generation pipeline
+const generator = await pipeline(
+  "text-generation",
+  "onnx-community/Qwen3-0.6B-ONNX",
+  { device: "webgpu", dtype: "q4f16" },
+);
+
+// Define the list of messages
+const messages = [
+  { role: "system", content: "You are a helpful assistant." },
+  { role: "user", content: "Write me a poem about Machine Learning." },
+];
+
+// Generate a response
+const output = await generator(messages, {
+  max_new_tokens: 512,
+  do_sample: false,
+  streamer: new TextStreamer(generator.tokenizer, { skip_prompt: true, skip_special_tokens: true }),
+});
+console.log(output[0].generated_text.at(-1).content);
+
+--
+
+## onnx-community/LFM2-350M-ONNX
+import { pipeline, TextStreamer } from "@huggingface/transformers";
+
+// Create a text generation pipeline
+const generator = await pipeline(
+  "text-generation",
+  "onnx-community/LFM2-350M-ONNX",
+  { dtype: "q4", device: "webgpu" },
+);
+
+// Define the list of messages
+const messages = [
+  { role: "system", content: "You are a helpful assistant." },
+  { role: "user", content: "What is the capital of France?" },
+];
+
+// Generate a response
+const output = await generator(messages, {
+    max_new_tokens: 512,
+    do_sample: false,
+    streamer: new TextStreamer(generator.tokenizer, { skip_prompt: true, skip_special_tokens: true }),
+});
+console.log(output[0].generated_text.at(-1).content);
+// The capital of France is Paris. It is a vibrant city known for its historical landmarks, art, fashion, and cuisine.
+
+Example: Tool calling
+
+import { pipeline, TextStreamer } from "@huggingface/transformers";
+
+// Create a text generation pipeline
+const generator = await pipeline(
+  "text-generation",
+  "onnx-community/LFM2-350M-ONNX",
+  { dtype: "q4", device: "webgpu" },
+);
+
+// Define the tools available to the model
+const tools = [
+  {
+    name: "get_weather",
+    description: "Get current weather information for a location",
+    parameters: {
+      type: "object",
+      properties: {
+        location: {
+          type: "string",
+          description: "The city and state, e.g. San Francisco, CA",
+        },
+        unit: {
+          type: "string",
+          enum: ["celsius", "fahrenheit"],
+          description: "The unit of temperature to use",
+        },
+      },
+      required: ["location"],
+    },
+  },
+];
+
+// Define the list of messages
+const messages = [
+  { role: "user", content: "What's the weather like in New York?" },
+];
+
+// Generate a response
+const output = await generator(messages, {
+    max_new_tokens: 512,
+    do_sample: false,
+    streamer: new TextStreamer(generator.tokenizer, { skip_prompt: true, skip_special_tokens: true }),
+    tokenizer_encode_kwargs: { tools },
+});
+console.log(output[0].generated_text.at(-1).content);
+// [get_weather(location="New York, NY", unit="fahrenheit")]

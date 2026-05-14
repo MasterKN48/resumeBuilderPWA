@@ -18,6 +18,10 @@ import { InstallBanner } from "./components/shared/InstallBanner";
 import { SectionRenderer } from "./components/SectionRenderer";
 import { FileText } from "lucide-preact";
 
+// AI Component
+import { AIContainer } from "./components/AI/AIContainer";
+
+
 // Template Components
 import { ClassicTemplate } from "./components/templates/ClassicTemplate";
 import { ModernTemplate } from "./components/templates/ModernTemplate";
@@ -331,6 +335,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <AIContainer resumeData={data} />
     </>
   );
 }
