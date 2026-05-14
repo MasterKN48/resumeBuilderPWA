@@ -82,6 +82,29 @@
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    will-change: auto !important;
+    -webkit-filter: none !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+
+  /* Specific fix for mobile printing to prevent flattening */
+  body.mobile-print {
+    width: 210mm !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+  }
+
+  body.mobile-print .resume-slider-viewport,
+  body.mobile-print .resume-slider,
+  body.mobile-print .resume-slide {
+    width: 210mm !important;
+    overflow: visible !important;
+    display: block !important;
+    transform: none !important;
   }
 
   /* Print Overrides for Modern */
@@ -98,6 +121,7 @@
 
   .modern-sidebar {
     background-color: #f8f9fa !important;
-    -webkit-print-color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

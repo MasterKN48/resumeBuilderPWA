@@ -16,6 +16,7 @@ import {
 } from "./components/shared/TemplateNav";
 import { InstallBanner } from "./components/shared/InstallBanner";
 import { SectionRenderer } from "./components/SectionRenderer";
+import { FileText } from "lucide-preact";
 
 // Template Components
 import { ClassicTemplate } from "./components/templates/ClassicTemplate";
@@ -24,6 +25,8 @@ import { ModernTemplate } from "./components/templates/ModernTemplate";
 export default function App() {
   const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseProgress, setParseProgress] = useState(0);
 
   // Core Data Management
   const {
@@ -137,6 +140,48 @@ export default function App() {
     setTimeout(cleanupPrint, 10000);
   };
 
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size exceeds 5MB limit.");
+      return;
+    }
+
+    setIsParsing(true);
+    setParseProgress(0);
+
+    try {
+      const { parsePdf } = await import("./utils/pdfParser");
+      const { parseResumeText } = await import("./utils/resumeParser");
+      
+      const text = await parsePdf(file, (progress) => {
+        setParseProgress(progress);
+      });
+
+      console.log("%cPDF Parsing Complete!", "color: #d86244; font-weight: bold; font-size: 16px;");
+      console.log("%cRaw Extracted Text:", "color: #94a3b8; font-weight: bold; font-size: 14px;");
+      console.log(text);
+      
+      const parsedJson = parseResumeText(text);
+      console.log("%cSemantic Extraction Result:", "color: #40e0d0; font-weight: bold; font-size: 14px;");
+      console.log(parsedJson);
+      
+      alert("Resume parsed successfully! Check the browser console for both raw text and structured JSON.");
+    } catch (error) {
+      console.error("PDF parsing error:", error);
+      alert("Error parsing PDF. Please make sure it's a valid PDF file.");
+    } finally {
+      setIsParsing(true); // Keep it briefly for the "Complete" state feel
+      setParseProgress(100);
+      setTimeout(() => {
+        setIsParsing(false);
+        setParseProgress(0);
+      }, 800);
+    }
+  };
+
   const renderSection = (sec, index) => (
     <SectionRenderer
       key={sec.id}
@@ -182,6 +227,7 @@ export default function App() {
         setPromptInjection={(val) => handleChange("promptInjection", val)}
         fontScale={data.fontScale}
         setFontScale={(val) => handleChange("fontScale", val)}
+        handlePdfUpload={handlePdfUpload}
       />
 
       <div className="resume-wrapper">
@@ -257,6 +303,34 @@ export default function App() {
         handleInstallClick={handleInstallClick}
         dismissInstall={dismissInstall}
       />
+
+      {isParsing && (
+        <div className="parsing-overlay">
+          <div className="parsing-card">
+            <div className="parsing-icon-container">
+              <FileText size={48} />
+              <div className="parsing-icon-scan"></div>
+            </div>
+            <div className="parsing-text">
+              {parseProgress < 100 ? "Analyzing Resume..." : "Analysis Complete!"}
+            </div>
+            <div className="parsing-subtext">
+              {parseProgress < 100 
+                ? "Our AI is extracting your professional experience..." 
+                : "Text extracted successfully!"}
+            </div>
+            <div className="progress-bar-container">
+              <div 
+                className="progress-bar-fill" 
+                style={{ width: `${parseProgress}%` }}
+              ></div>
+            </div>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-color)' }}>
+              {Math.round(parseProgress)}%
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

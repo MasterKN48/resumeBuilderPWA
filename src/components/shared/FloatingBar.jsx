@@ -7,6 +7,10 @@ import {
   HelpCircle,
   Sparkles,
   Printer,
+  UploadCloud,
+  Maximize,
+  Zap,
+  Type,
 } from "lucide-preact";
 
 export const FloatingBar = ({
@@ -24,9 +28,17 @@ export const FloatingBar = ({
   setPromptInjection,
   fontScale,
   setFontScale,
+  handlePdfUpload,
 }) => {
   return (
     <div className="floating-bar hide-print">
+      <input
+        type="file"
+        id="pdf-upload"
+        accept=".pdf"
+        style={{ display: "none" }}
+        onChange={handlePdfUpload}
+      />
       {isEditMode && (
         <button
           className="action-btn"
@@ -129,6 +141,16 @@ export const FloatingBar = ({
             <RefreshCw size={20} />
           </button>
         )}
+
+        <button
+          className="action-btn"
+          onClick={() => document.getElementById("pdf-upload").click()}
+          title="Upload Existing Resume (PDF)"
+          style={{ color: "var(--accent-color)" }}
+        >
+          <UploadCloud size={20} />
+        </button>
+
         <button
           className={`action-btn ${isEditMode ? "active" : ""}`}
           onClick={() => setIsEditMode(!isEditMode)}
@@ -137,63 +159,76 @@ export const FloatingBar = ({
           {isEditMode ? <Check size={20} /> : <Edit3 size={20} />}
         </button>
 
-        {isEditMode && (
-          <>
-            <button
-              className="action-btn"
-              popovertarget="help-menu"
-              title="Editing Tips"
-            >
-              <HelpCircle size={20} />
-            </button>
-            <div
-              id="help-menu"
-              popover="auto"
-              className="dock-popover help-popover"
-            >
-              <div className="dock-settings help-content">
-                <h3
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    margin: "0 0 12px 0",
-                    fontSize: "14px",
-                    fontWeight: "700",
-                    color: "var(--text-main)",
-                  }}
-                >
-                  <Edit3 size={16} /> Editing Tips
-                </h3>
-                <ul
-                  style={{
-                    margin: 0,
-                    padding: "0 0 0 18px",
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  <li>
-                    <strong>Delete:</strong> Click trash icon to clear fields.
-                  </li>
-                  <li>
-                    <strong>Bold:</strong> Wrap text in double asterisks (e.g.{" "}
-                    <code>**bold**</code>).
-                  </li>
-                  <li>
-                    <strong>Reorder:</strong> Hover items to reveal drag
-                    controls.
-                  </li>
-                  <li>
-                    <strong>Fonts:</strong> Paste a Google Font name (e.g.{" "}
-                    <code>Oswald</code>).
-                  </li>
-                </ul>
+        <button
+          className="action-btn"
+          popovertarget="help-menu"
+          title="App Features & Tips"
+        >
+          <HelpCircle size={20} />
+        </button>
+
+        <div
+          id="help-menu"
+          popover="auto"
+          className="dock-popover help-popover"
+        >
+          <div className="dock-settings help-content">
+            <div className="help-header">
+              <Sparkles size={20} style={{ color: 'var(--accent-color)' }} />
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-main)' }}>Features & Tips</h3>
+            </div>
+            
+            <div className="help-grid">
+              <div className="help-item">
+                <UploadCloud size={18} />
+                <div className="help-item-content">
+                  <strong>AI PDF Parse</strong>
+                  <p>Import existing resumes to extract text instantly (Beta).</p>
+                </div>
+              </div>
+
+              <div className="help-item">
+                <Maximize size={18} />
+                <div className="help-item-content">
+                  <strong>Auto-Scaling</strong>
+                  <p>Resume scales automatically to fit mobile screens perfectly.</p>
+                </div>
+              </div>
+
+              <div className="help-item">
+                <Zap size={18} />
+                <div className="help-item-content">
+                  <strong>Smart Zoom</strong>
+                  <p>Pinch-zoom on mobile is stabilized for maximum readability.</p>
+                </div>
+              </div>
+
+              <div className="help-item">
+                <Edit3 size={18} />
+                <div className="help-item-content">
+                  <strong>Edit Mode</strong>
+                  <p>Click the pencil to reorder sections and edit all content.</p>
+                </div>
+              </div>
+
+              <div className="help-item">
+                <Type size={18} />
+                <div className="help-item-content">
+                  <strong>Markdown</strong>
+                  <p>Use <code>**text**</code> for bold emphasis in bullet points.</p>
+                </div>
+              </div>
+
+              <div className="help-item">
+                <Printer size={18} />
+                <div className="help-item-content">
+                  <strong>Export PDF</strong>
+                  <p>A4/Letter optimized printing with auto-page breaks.</p>
+                </div>
               </div>
             </div>
-          </>
-        )}
+          </div>
+        </div>
 
         <button
           className="action-btn"
