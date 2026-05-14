@@ -15,7 +15,13 @@ export function AIContainer({ resumeData }) {
   ]);
   const [isGenerating, setIsGenerating] = useState(false);
   const generationStartTime = useRef(null);
+  const statusRef = useRef(status);
   const worker = useRef(null);
+
+  // Sync ref with state
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   // Initialize Worker
   useEffect(() => {
@@ -40,7 +46,7 @@ export function AIContainer({ resumeData }) {
             const last = prev[prev.length - 1];
             if (last && last.role === "ai") {
               const updated = [...prev];
-              updated[updated.length - 1] = { ...last, content };
+              updated[updated.length - 1] = { ...last, content: last.content + content };
               return updated;
             }
             return [...prev, { role: "ai", content }];
@@ -80,7 +86,7 @@ export function AIContainer({ resumeData }) {
 
     // Silent background download check after a short delay
     const bgTimer = setTimeout(() => {
-      if (status === "idle") {
+      if (statusRef.current === "idle") {
         worker.current.postMessage({ type: 'load', model_id: AI_CONFIG.MODEL_ID });
       }
     }, 5000); // 5 seconds delay to prioritize main content

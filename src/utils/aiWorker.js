@@ -4,6 +4,7 @@
 import {
   pipeline,
   env,
+  TextStreamer,
 } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0";
 
 // Configure environment for WebGPU and custom cache
@@ -46,39 +47,31 @@ self.addEventListener("message", async (event) => {
       const { system_prompt } = event.data;
       const generator = await TextGenerationPipeline.getInstance(model_id);
 
-      // Construct prompt with system instructions
-      let prompt = `<|system|>\n${system_prompt || ""}\n`;
-
-      messages.forEach((m) => {
-        const role = m.role === "user" ? "user" : "assistant";
-        prompt += `<|${role}|>\n${m.content}\n`;
-      });
-
-      prompt += `<|assistant|>\n`;
-
-      const output = await generator(prompt, {
-        max_new_tokens: 5000,
-        temperature: 0.7,
-        do_sample: true,
-        top_k: 50,
-        ...params,
-        callback_function: (beams) => {
-          const decoded = generator.tokenizer.decode(
-            beams[0].output_token_ids,
-            {
-              skip_special_tokens: true,
-            },
-          );
-          // Extract only the assistant's response part
-          const content = decoded.split("<|assistant|>").pop().trim();
-          self.postMessage({ type: "partial_result", content });
+      const streamer = new TextStreamer(generator.tokenizer, {
+        skip_prompt: true,
+        skip_special_tokens: true,
+        callback_function: (text) => {
+          self.postMessage({ type: "partial_result", content: text });
         },
       });
 
-      const finalContent = output[0].generated_text
-        .split("<|assistant|>")
-        .pop()
-        .trim();
+      // Format messages for the generator (native support in v4)
+      const formattedMessages = [
+        { role: "system", content: system_prompt },
+        ...messages,
+      ];
+      console.log("### formattedMessages ###\n", formattedMessages);
+      const output = await generator(formattedMessages, {
+        max_new_tokens: 2048,
+        temperature: 0.7,
+        do_sample: true,
+        top_k: 50,
+        streamer,
+        ...params,
+      });
+
+      // Final content from messages format
+      const finalContent = output[0].generated_text.at(-1).content;
       self.postMessage({
         type: "complete",
         content: finalContent,
@@ -103,7 +96,10 @@ self.addEventListener("message", async (event) => {
         do_sample: false,
       });
 
-      const finalContent = output[0].generated_text.split("summary:").pop().trim();
+      const finalContent = output[0].generated_text
+        .split("summary:")
+        .pop()
+        .trim();
       self.postMessage({
         type: "summarize_complete",
         content: finalContent,
