@@ -12,7 +12,6 @@ import {
   HelpCircle,
   Palette,
   Download,
-  Layout,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -164,13 +163,12 @@ const FONT_THEMES = {
 export default function App() {
   const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+
   const [dragSource, setDragSource] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [scale, setScale] = useState(1);
-  const [viewportHeight, setViewportHeight] = useState('auto');
-
+  const [viewportHeight, setViewportHeight] = useState("auto");
 
   useEffect(() => {
     const isStandalone =
@@ -215,7 +213,7 @@ export default function App() {
         setShowInstallBanner(true);
         localStorage.setItem("pwaInstallLastShown", now.toString());
       }
-    }, 30000);
+    }, 20000);
 
     return () => {
       window.removeEventListener(
@@ -530,6 +528,9 @@ export default function App() {
       setFontSize("medium");
       setFontTheme("modern");
       setCustomFont("");
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.reload();
     }
   };
 
@@ -1380,13 +1381,13 @@ export default function App() {
 
         <div
           className="resume-slider-viewport hide-scrollbar"
-          style={{ 
-            width: scale < 1 ? `${800 * scale}px` : '100%',
-            height: viewportHeight, 
+          style={{
+            width: scale < 1 ? `${800 * scale}px` : "100%",
+            height: viewportHeight,
             transition: "height 0.3s ease",
             margin: "0 auto",
             position: "relative",
-            overflow: "hidden"
+            overflow: "hidden",
           }}
         >
           <div
@@ -1398,7 +1399,7 @@ export default function App() {
               transform: `scale(${scale}) translateX(${template === "modern" ? "-800px" : "0"})`,
               transformOrigin: "top left",
               width: "1600px",
-              display: "flex"
+              display: "flex",
             }}
           >
             {/* Classic Slide */}
