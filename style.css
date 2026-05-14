@@ -106,6 +106,8 @@ body {
   background-color: #f3f4f6;
   color: var(--text-main);
   font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   line-height: 1.6;
   display: flex;
   flex-direction: column;
@@ -514,13 +516,14 @@ body {
 
 .resume-container {
   background-color: white;
-  width: 100%;
+  width: 800px;
+  min-width: 800px;
   max-width: 800px;
   padding: 40px 50px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   box-sizing: border-box;
-  overflow-x: auto;
+  margin: 0;
 }
 
 /* Header */
@@ -782,29 +785,7 @@ p {
 }
 
 /* Responsive adjustments */
-@media (max-width: 600px) {
-  .resume-container {
-    padding: 25px 20px;
-  }
-
-  .contact-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .contact-separator {
-    display: none;
-  }
-
-  .experience-header {
-    flex-direction: column;
-  }
-
-  .date {
-    margin-top: 4px;
-  }
-}
+/* Removed max-width 600px media query to keep layout identical to desktop */
 
 
 
@@ -1071,14 +1052,14 @@ textarea.edit-input {
 /* Print Styles */
 @media print {
   @page {
-    size: A4;
-    margin: 0;
+    size: A4 portrait;
+    margin: 0mm;
   }
 
   html,
   body {
     width: 210mm;
-    height: 297mm;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
@@ -1105,9 +1086,24 @@ textarea.edit-input {
     transform: none !important;
   }
 
+  .resume-container {
+    zoom: 1 !important;
+    transform: none !important;
+    width: 210mm !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body.mobile-print .resume-container {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
   .resume-slider-viewport {
     overflow: visible !important;
     width: 100% !important;
+    height: auto !important;
     border-radius: 0 !important;
     position: static !important;
   }
@@ -1127,6 +1123,7 @@ textarea.edit-input {
     transition: none !important;
     position: static !important;
     filter: none !important;
+    margin: 0 !important;
   }
 
   .resume-slide.inactive {
@@ -1310,55 +1307,6 @@ textarea.edit-input {
     gap: 16px;
     padding: 8px 16px;
   }
-
-  /* De-congest Editing Mode on Mobile */
-  .editing .edit-input {
-    padding: 8px 12px !important;
-    margin: 6px 0 !important;
-    display: block !important;
-    width: 100% !important;
-    font-size: 14px !important;
-  }
-
-  .editing .experience-header,
-  .editing .education-header {
-    flex-direction: column !important;
-    gap: 12px !important;
-    align-items: flex-start !important;
-    margin-bottom: 15px !important;
-  }
-
-  .editing .bullet-list li {
-    margin-bottom: 16px !important;
-    padding-top: 4px;
-  }
-
-  .editing .section {
-    padding: 15px !important;
-    margin-bottom: 25px !important;
-  }
-
-  .editing .contact-info {
-    gap: 12px !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  .editing .contact-item {
-    width: 100% !important;
-    max-width: none !important;
-    justify-content: space-between !important;
-    padding: 12px 16px !important;
-  }
-
-  .resume-container {
-    padding: 20px 15px !important;
-    border-radius: 0 !important;
-  }
-
-  .resume-slider-viewport {
-    border-radius: 0 !important;
-  }
 }
 
 .drag-handle {
@@ -1533,41 +1481,7 @@ textarea.edit-input {
   transform: scale(1.2);
 }
 
-/* Responsive Modern */
-@media (max-width: 768px) {
-  .modern-layout {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .modern-sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--line-color);
-    padding: 30px 20px;
-  }
-
-  .modern-main-content {
-    padding: 30px 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .modern-sidebar, .modern-main-content {
-    padding: 20px 15px;
-  }
-  
-  .resume-container {
-    padding: 20px 15px;
-  }
-
-  .name {
-    font-size: 32px;
-  }
-
-  .modern-name {
-    font-size: 24px;
-  }
-}
+/* Removed responsive layout changes for modern template to preserve desktop layout on all devices */
 
 /* Print Overrides for Modern */
 @media print {
@@ -1643,9 +1557,10 @@ textarea.edit-input {
   }
 }
 
-/* Smooth Template Transitions */
 .resume-slider-viewport {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   position: relative;
   border-radius: 12px;
@@ -1653,7 +1568,8 @@ textarea.edit-input {
 
 .resume-slider {
   display: flex;
-  width: 200%;
+  width: 1600px;
+  max-width: 1600px;
   /* Two templates side-by-side */
   transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
   will-change: transform;
@@ -1665,15 +1581,20 @@ textarea.edit-input {
 }
 
 .resume-slider.template-active-modern {
-  transform: translateX(-50%);
+  transform: translateX(-800px);
 }
 
 .resume-slide {
-  width: 50%;
+  width: 800px;
+  flex-shrink: 0;
   transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 40px;
 }
+
+
 
 .resume-slide.inactive {
   opacity: 0.3;
@@ -1696,4 +1617,12 @@ textarea.edit-input {
   margin: 0 !important;
   /* Slider handles centering */
   width: 100% !important;
+}
+/* Hide Scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

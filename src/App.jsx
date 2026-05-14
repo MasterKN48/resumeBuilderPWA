@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { v4 as uuidv4 } from "uuid";
 import {
   Printer,
@@ -162,11 +162,15 @@ const FONT_THEMES = {
 };
 
 export default function App() {
+  const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [dragSource, setDragSource] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [viewportHeight, setViewportHeight] = useState('auto');
+
 
   useEffect(() => {
     const isStandalone =
@@ -304,6 +308,39 @@ export default function App() {
     return defaultData;
   });
 
+  useEffect(() => {
+    const updateScaleAndHeight = () => {
+      const availableWidth = window.innerWidth - 40;
+      let newScale = 1;
+      if (availableWidth < 800) {
+        newScale = availableWidth / 800;
+        setScale(newScale);
+      } else {
+        setScale(1);
+      }
+
+      // Automatically collapse the height of the wrapper to match the visually scaled resume
+      // to prevent huge empty white space at the bottom of mobile screens
+      const activeSlideIndex = template === "classic" ? 1 : 2;
+      const activeContainer = resumeRefs.current[activeSlideIndex];
+      if (activeContainer && availableWidth < 800) {
+        setViewportHeight(`${activeContainer.offsetHeight * newScale}px`);
+      } else {
+        setViewportHeight("auto");
+      }
+    };
+    updateScaleAndHeight();
+    window.addEventListener("resize", updateScaleAndHeight);
+
+    // Track height changes during edit mode
+    const interval = setInterval(updateScaleAndHeight, 500);
+
+    return () => {
+      window.removeEventListener("resize", updateScaleAndHeight);
+      clearInterval(interval);
+    };
+  }, [template, data]);
+
   // Dynamic Google Font Loader
   useEffect(() => {
     if (fontTheme === "custom" && customFont) {
@@ -339,6 +376,16 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem("resumeData", JSON.stringify(data));
+
+    // Permanently set the page title so native mobile share/print sheets capture the correct filename
+    const userName = (data.name || "USER")
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    const year = new Date().getFullYear();
+    document.title = `001-${userName}-${year}`;
   }, [data]);
 
   useEffect(() => {
@@ -553,23 +600,25 @@ export default function App() {
   };
 
   const handlePrint = () => {
-    const originalTitle = document.title;
-    const userName = (data.name || "USER")
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+    setIsEditMode(false);
 
-    const year = new Date().getFullYear();
-    document.title = `001-${userName}-${year}`;
+    const isMobile = window.innerWidth < 840;
+    if (isMobile) {
+      document.body.classList.add("mobile-print");
+    }
 
+    const cleanupPrint = () => {
+      document.body.classList.remove("mobile-print");
+      window.removeEventListener("afterprint", cleanupPrint);
+    };
+
+    window.addEventListener("afterprint", cleanupPrint);
+
+    // Call print
     window.print();
 
-    // Restore title after a brief delay
-    setTimeout(() => {
-      document.title = originalTitle;
-    }, 500);
+    // Fallback cleanup for mobile browsers
+    setTimeout(cleanupPrint, 10000); // 10 seconds
   };
 
   const parseMarkdown = (text) => {
@@ -1328,8 +1377,29 @@ export default function App() {
           <ChevronRight size={32} />
         </button>
 
-        <div className="resume-slider-viewport">
-          <div className={`resume-slider template-active-${template}`}>
+        <div
+          className="resume-slider-viewport hide-scrollbar"
+          style={{ 
+            width: scale < 1 ? `${800 * scale}px` : '100%',
+            height: viewportHeight, 
+            transition: "height 0.3s ease",
+            margin: "0 auto",
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          <div
+            className={`resume-slider template-active-${template}`}
+            style={{
+              position: scale < 1 ? "absolute" : "relative",
+              top: 0,
+              left: 0,
+              transform: `scale(${scale}) translateX(${template === "modern" ? "-800px" : "0"})`,
+              transformOrigin: "top left",
+              width: "1600px",
+              display: "flex"
+            }}
+          >
             {/* Classic Slide */}
             <div
               className={`resume-slide ${template === "classic" ? "active" : "inactive"}`}
@@ -1337,6 +1407,7 @@ export default function App() {
               <div
                 className={`resume-container template-classic ${isEditMode ? "editing" : ""}`}
                 style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
+                ref={(el) => (resumeRefs.current[1] = el)}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -1464,6 +1535,7 @@ export default function App() {
               <div
                 className={`resume-container template-modern ${isEditMode ? "editing" : ""}`}
                 style={{ ...FONT_SIZES[fontSize], ...dynamicFontTheme }}
+                ref={(el) => (resumeRefs.current[2] = el)}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
