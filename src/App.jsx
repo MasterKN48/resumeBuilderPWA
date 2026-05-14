@@ -18,6 +18,14 @@ import { FloatingBar } from "./components/shared/FloatingBar";
 import { TemplateNavButtons, IndicatorDots } from "./components/shared/TemplateNav";
 import { InstallBanner } from "./components/shared/InstallBanner";
 
+// Section Components
+import { SummarySection } from "./components/sections/SummarySection";
+import { ExperienceSection } from "./components/sections/ExperienceSection";
+import { ProjectsSection } from "./components/sections/ProjectsSection";
+import { EducationSection } from "./components/sections/EducationSection";
+import { SkillsSection } from "./components/sections/SkillsSection";
+import { CertificationsSection } from "./components/sections/CertificationsSection";
+
 export default function App() {
   const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
@@ -344,438 +352,39 @@ export default function App() {
       onDragEnd: () => setDragSource(null),
     };
 
+    const sectionArgs = {
+      data,
+      isEditMode,
+      sectionProps,
+      commonProps,
+      dragSource,
+      handleDragStart,
+      handleDragOver,
+      handleDrop,
+      setDragSource,
+      handleHeadingChange,
+      handleChange,
+      handleArrayChange,
+      handleBulletChange,
+      removeBullet,
+      addBullet,
+      addItem,
+      deleteItem,
+    };
+
     switch (sec.type) {
       case "summary":
-        return (
-          <section {...sectionProps}>
-            <SectionControls {...commonProps} />
-            <div className="section-header">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="h3"
-                className="section-title"
-                value={data.headings.summary}
-                onChange={(val) => handleHeadingChange("summary", val)}
-              />
-            </div>
-            <div className="section-content">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="p"
-                value={data.summary}
-                onChange={(val) => handleChange("summary", val)}
-                multiline
-              />
-            </div>
-          </section>
-        );
-
+        return <SummarySection {...sectionArgs} />;
       case "experience":
-        return (
-          <section {...sectionProps}>
-            <SectionControls {...commonProps} />
-            <div className="section-header">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="h3"
-                className="section-title"
-                value={data.headings.experience}
-                onChange={(val) => handleHeadingChange("experience", val)}
-              />
-            </div>
-            <div className="section-content">
-              {data.experience.map((exp, eIdx) => (
-                <div
-                  key={exp.id}
-                  className={`experience-item relative-box ${dragSource?.type === "experience" && dragSource?.index === eIdx ? "dragging" : ""}`}
-                  draggable={isEditMode}
-                  onDragStart={() => handleDragStart(eIdx, "experience")}
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDrop(eIdx, "experience")}
-                  onDragEnd={() => setDragSource(null)}
-                >
-                  <Controls onDelete={() => deleteItem("experience", eIdx)} />
-                  <div className="experience-header">
-                    <EditableText
-                isEditMode={isEditMode}
-                      tag="h4"
-                      className="job-title"
-                      value={exp.title}
-                      onChange={(val) =>
-                        handleArrayChange("experience", eIdx, "title", val)
-                      }
-                    />
-                    <EditableText
-                isEditMode={isEditMode}
-                      tag="span"
-                      className="date"
-                      value={exp.date}
-                      onChange={(val) =>
-                        handleArrayChange("experience", eIdx, "date", val)
-                      }
-                    />
-                  </div>
-                  <div className="company-location">
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={exp.company}
-                      onChange={(val) =>
-                        handleArrayChange("experience", eIdx, "company", val)
-                      }
-                    />
-                    &nbsp;&bull;&nbsp;
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={exp.location}
-                      onChange={(val) =>
-                        handleArrayChange("experience", eIdx, "location", val)
-                      }
-                    />
-                  </div>
-                  <ul className="bullet-list">
-                    {exp.bullets.map((bullet, bIdx) => (
-                      <li key={bIdx} className="bullet-item">
-                        <EditableText
-                isEditMode={isEditMode}
-                          value={bullet}
-                          onChange={(val) =>
-                            handleBulletChange("experience", eIdx, bIdx, val)
-                          }
-                          multiline
-                        />
-                        {isEditMode && (
-                          <button
-                            className="del-bullet-btn hide-print"
-                            onClick={() =>
-                              removeBullet("experience", eIdx, bIdx)
-                            }
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  {isEditMode && (
-                    <button
-                      className="add-btn sub-btn hide-print"
-                      onClick={() => addBullet("experience", eIdx)}
-                    >
-                      <Plus size={14} /> Add Bullet
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditMode && (
-                <button
-                  className="add-btn hide-print"
-                  onClick={() => addItem("experience")}
-                >
-                  <Plus size={16} /> Add Experience
-                </button>
-              )}
-            </div>
-          </section>
-        );
-
+        return <ExperienceSection {...sectionArgs} />;
       case "projects":
-        return (
-          <section {...sectionProps}>
-            <SectionControls {...commonProps} />
-            <div className="section-header">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="h3"
-                className="section-title"
-                value={data.headings.projects}
-                onChange={(val) => handleHeadingChange("projects", val)}
-              />
-            </div>
-            <div className="section-content">
-              {data.projects.map((proj, pIdx) => (
-                <div
-                  key={proj.id}
-                  className={`experience-item relative-box ${dragSource?.type === "projects" && dragSource?.index === pIdx ? "dragging" : ""}`}
-                  draggable={isEditMode}
-                  onDragStart={() => handleDragStart(pIdx, "projects")}
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDrop(pIdx, "projects")}
-                  onDragEnd={() => setDragSource(null)}
-                >
-                  <Controls onDelete={() => deleteItem("projects", pIdx)} />
-                  <div className="experience-header">
-                    <EditableText
-                isEditMode={isEditMode}
-                      tag="h4"
-                      className="job-title"
-                      value={proj.name}
-                      onChange={(val) =>
-                        handleArrayChange("projects", pIdx, "name", val)
-                      }
-                    />
-                  </div>
-
-                  {(isEditMode || proj.link) && (
-                    <div
-                      className="company-location"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      {isEditMode ? (
-                        <EditableText
-                isEditMode={isEditMode}
-                          value={proj.link}
-                          onChange={(val) =>
-                            handleArrayChange("projects", pIdx, "link", val)
-                          }
-                          placeholder="Project URL (leave empty to hide)"
-                        />
-                      ) : (
-                        <a
-                          href={
-                            proj.link.startsWith("http")
-                              ? proj.link
-                              : `https://${proj.link}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: "inherit",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          {proj.link}
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  <EditableText
-                isEditMode={isEditMode}
-                    tag="p"
-                    value={proj.description}
-                    onChange={(val) =>
-                      handleArrayChange("projects", pIdx, "description", val)
-                    }
-                    multiline
-                  />
-                </div>
-              ))}
-              {isEditMode && (
-                <button
-                  className="add-btn hide-print"
-                  onClick={() => addItem("projects")}
-                >
-                  <Plus size={16} /> Add Project
-                </button>
-              )}
-            </div>
-          </section>
-        );
-
+        return <ProjectsSection {...sectionArgs} />;
       case "education":
-        return (
-          <section {...sectionProps}>
-            <SectionControls {...commonProps} />
-            <div className="section-header">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="h3"
-                className="section-title"
-                value={data.headings.education}
-                onChange={(val) => handleHeadingChange("education", val)}
-              />
-            </div>
-            <div className="section-content">
-              {data.education.map((edu, eIdx) => (
-                <div
-                  key={edu.id}
-                  className={`education-item relative-box ${dragSource?.type === "education" && dragSource?.index === eIdx ? "dragging" : ""}`}
-                  draggable={isEditMode}
-                  onDragStart={() => handleDragStart(eIdx, "education")}
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDrop(eIdx, "education")}
-                  onDragEnd={() => setDragSource(null)}
-                >
-                  <Controls onDelete={() => deleteItem("education", eIdx)} />
-                  <div className="experience-header">
-                    <EditableText
-                isEditMode={isEditMode}
-                      tag="h4"
-                      className="job-title"
-                      value={edu.degree}
-                      onChange={(val) =>
-                        handleArrayChange("education", eIdx, "degree", val)
-                      }
-                    />
-                    <EditableText
-                isEditMode={isEditMode}
-                      tag="span"
-                      className="date"
-                      value={edu.date}
-                      onChange={(val) =>
-                        handleArrayChange("education", eIdx, "date", val)
-                      }
-                    />
-                  </div>
-                  <div className="company-location">
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={edu.institution}
-                      onChange={(val) =>
-                        handleArrayChange("education", eIdx, "institution", val)
-                      }
-                    />
-                    &nbsp;&bull;&nbsp;
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={edu.location}
-                      onChange={(val) =>
-                        handleArrayChange("education", eIdx, "location", val)
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
-              {isEditMode && (
-                <button
-                  className="add-btn hide-print"
-                  onClick={() => addItem("education")}
-                >
-                  <Plus size={16} /> Add Education
-                </button>
-              )}
-            </div>
-          </section>
-        );
-
+        return <EducationSection {...sectionArgs} />;
       case "skills":
-        return (
-          <section {...sectionProps}>
-            <SectionControls {...commonProps} />
-            <div className="section-header">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="h3"
-                className="section-title"
-                value={data.headings.skills}
-                onChange={(val) => handleHeadingChange("skills", val)}
-              />
-            </div>
-            <div className="section-content">
-              <div className="skills-list">
-                {data.skills.map((skill, sIdx) => (
-                  <div
-                    key={skill.id}
-                    className={`skill-pill relative-box ${dragSource?.type === "skills" && dragSource?.index === sIdx ? "dragging" : ""}`}
-                    draggable={isEditMode}
-                    onDragStart={() => handleDragStart(sIdx, "skills")}
-                    onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(sIdx, "skills")}
-                    onDragEnd={() => setDragSource(null)}
-                  >
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={skill.name}
-                      onChange={(val) =>
-                        handleArrayChange("skills", sIdx, "name", val)
-                      }
-                    />
-                    {isEditMode && (
-                      <button
-                        className="del-skill-btn hide-print"
-                        onClick={() => deleteItem("skills", sIdx)}
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {isEditMode && (
-                <button
-                  className="add-btn sub-btn hide-print"
-                  onClick={() => addItem("skills")}
-                  style={{ marginTop: "10px" }}
-                >
-                  <Plus size={14} /> Add Skill Item
-                </button>
-              )}
-            </div>
-          </section>
-        );
-
+        return <SkillsSection {...sectionArgs} />;
       case "certifications":
-        return (
-          <section {...sectionProps}>
-            <SectionControls {...commonProps} />
-            <div className="section-header">
-              <EditableText
-                isEditMode={isEditMode}
-                tag="h3"
-                className="section-title"
-                value={data.headings.certifications}
-                onChange={(val) => handleHeadingChange("certifications", val)}
-              />
-            </div>
-            <div className="section-content">
-              <ul className="bullet-list certifications-list">
-                {data.certifications.map((cert, cIdx) => (
-                  <li
-                    key={cert.id}
-                    className={`relative-box cert-item ${dragSource?.type === "certifications" && dragSource?.index === cIdx ? "dragging" : ""}`}
-                    draggable={isEditMode}
-                    onDragStart={() => handleDragStart(cIdx, "certifications")}
-                    onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(cIdx, "certifications")}
-                    onDragEnd={() => setDragSource(null)}
-                  >
-                    <Controls
-                    isEditMode={isEditMode}
-                      onDelete={() => deleteItem("certifications", cIdx)}
-                    />
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={cert.name}
-                      onChange={(val) =>
-                        handleArrayChange("certifications", cIdx, "name", val)
-                      }
-                    />
-                    &nbsp;&bull;&nbsp;
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={cert.org}
-                      onChange={(val) =>
-                        handleArrayChange("certifications", cIdx, "org", val)
-                      }
-                    />
-                    &nbsp;&bull;&nbsp;
-                    <EditableText
-                isEditMode={isEditMode}
-                      value={cert.year}
-                      onChange={(val) =>
-                        handleArrayChange("certifications", cIdx, "year", val)
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-              {isEditMode && (
-                <button
-                  className="add-btn hide-print"
-                  onClick={() => addItem("certifications")}
-                >
-                  <Plus size={16} /> Add Certification
-                </button>
-              )}
-            </div>
-          </section>
-        );
-
+        return <CertificationsSection {...sectionArgs} />;
       case "pageBreak":
         return (
           <div
@@ -788,7 +397,6 @@ export default function App() {
             </div>
           </div>
         );
-
       default:
         return null;
     }
