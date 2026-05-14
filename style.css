@@ -402,10 +402,8 @@ body {
 [data-theme="navy"] .dock-settings,
 [data-theme="forest"] .dock-settings {
   background: rgba(15, 23, 42, 0.6);
-  background-image: linear-gradient(
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0)
-  );
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0));
   box-shadow:
     0 20px 50px -10px rgba(0, 0, 0, 0.4),
     inset 0 0 0 1px rgba(255, 255, 255, 0.15);
@@ -417,6 +415,7 @@ body {
     opacity: 0;
     transform: translateY(20px) scale(0.9) rotateX(-10deg);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0) scale(1) rotateX(0);
@@ -993,7 +992,7 @@ textarea.edit-input {
   -webkit-backdrop-filter: blur(16px);
   padding: 4px;
   border-radius: 10px;
-  box-shadow: 
+  box-shadow:
     0 4px 15px rgba(0, 0, 0, 0.08),
     inset 0 0 0 1px rgba(255, 255, 255, 0.5);
   border: 1px solid var(--line-color);
@@ -1081,13 +1080,14 @@ textarea.edit-input {
 
   html,
   body {
-    width: 210mm;
+    width: 210mm !important;
     height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    overflow: visible !important;
   }
 
   .hide-print,
@@ -1098,67 +1098,37 @@ textarea.edit-input {
     display: none !important;
   }
 
-  /* Reset Slider for Print */
-  .resume-wrapper {
+  /* Reset Slider for Print - Force Desktop Layout */
+  .resume-wrapper,
+  .resume-slider-viewport,
+  .resume-slider,
+  .resume-slide,
+  .resume-slide.active,
+  .resume-container {
     display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
+    width: 210mm !important;
+    min-width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
     padding: 0 !important;
+    padding-bottom: 0 !important;
     position: static !important;
     transform: none !important;
+    zoom: 1 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #fff !important;
+    min-height: 0 !important;
   }
 
   .resume-container {
-    zoom: 1 !important;
-    transform: none !important;
-    width: 210mm !important;
-    min-width: 100% !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-  }
-
-  body.mobile-print .resume-container {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-
-  .section {
-    break-inside: auto;
-    page-break-inside: auto;
-  }
-
-  .section-header {
-    break-after: avoid;
-    page-break-after: avoid;
-  }
-
-  .resume-slider-viewport,
-  .resume-slider,
-  .resume-slide {
-    overflow: visible !important;
-    height: auto !important;
+    padding: 5mm 10mm !important;
     min-height: 0 !important;
-    display: block !important;
-    width: 100% !important;
   }
 
   .resume-slide.inactive {
     display: none !important;
-  }
-
-  .resume-container {
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 4mm 10mm !important;
-    width: 210mm !important;
-    height: auto !important;
-    min-height: 0 !important;
-    border-radius: 0 !important;
-    background-color: #fff !important;
-    position: relative !important;
-    overflow: visible !important;
-    display: block !important;
   }
 
   .page-break {
@@ -1511,6 +1481,7 @@ textarea.edit-input {
   .modern-layout {
     display: grid !important;
     grid-template-columns: 240px 1fr !important;
+    width: 210mm !important;
   }
 
   .modern-sidebar {
