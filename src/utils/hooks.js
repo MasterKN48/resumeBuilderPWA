@@ -85,7 +85,17 @@ export const useScale = (template, data, resumeRefs) => {
 
   useEffect(() => {
     const updateScaleAndHeight = () => {
-      const availableWidth = window.innerWidth - 40;
+      // Use clientWidth (layout viewport) instead of innerWidth (visual viewport)
+      // to prevent scale changes when the user pinch-zooms on mobile.
+      const layoutWidth = document.documentElement.clientWidth || window.innerWidth;
+      
+      // If we're on a mobile device and the user is actively zooming, 
+      // we skip scale updates to maintain layout stability.
+      if (window.visualViewport && window.visualViewport.scale > 1.05) {
+        return;
+      }
+
+      const availableWidth = layoutWidth - 40;
       let newScale = 1;
       if (availableWidth < 800) {
         newScale = availableWidth / 800;
@@ -96,7 +106,7 @@ export const useScale = (template, data, resumeRefs) => {
 
       const activeSlideIndex = template === "classic" ? 1 : 2;
       const activeContainer = resumeRefs.current[activeSlideIndex];
-      if (activeContainer && availableWidth < 800) {
+      if (activeContainer && layoutWidth < 800) {
         setViewportHeight(`${activeContainer.offsetHeight * newScale}px`);
       } else {
         setViewportHeight("auto");
@@ -105,10 +115,19 @@ export const useScale = (template, data, resumeRefs) => {
 
     updateScaleAndHeight();
     window.addEventListener("resize", updateScaleAndHeight);
+    
+    // Also listen to visualViewport events if available for better zoom handling
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateScaleAndHeight);
+    }
+
     const interval = setInterval(updateScaleAndHeight, 500);
 
     return () => {
       window.removeEventListener("resize", updateScaleAndHeight);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", updateScaleAndHeight);
+      }
       clearInterval(interval);
     };
   }, [template, data, resumeRefs]);

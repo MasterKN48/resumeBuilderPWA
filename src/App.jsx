@@ -122,7 +122,7 @@ export default function App() {
 
   const handlePrint = () => {
     setIsEditMode(false);
-    const isMobile = window.innerWidth < 840;
+    const isMobile = (document.documentElement.clientWidth || window.innerWidth) < 840;
     if (isMobile) {
       document.body.classList.add("mobile-print");
     }
