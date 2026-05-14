@@ -67,6 +67,8 @@ export default function App() {
           parsed.linkedin = defaultData.linkedin;
         if (parsed.portfolio === undefined)
           parsed.portfolio = defaultData.portfolio;
+        if (parsed.promptInjection === undefined)
+          parsed.promptInjection = defaultData.promptInjection;
         if (!parsed.contactLayout)
           parsed.contactLayout = defaultData.contactLayout;
         return parsed;
@@ -428,6 +430,8 @@ export default function App() {
         setFontSize={setFontSize}
         customFont={customFont}
         setCustomFont={setCustomFont}
+        promptInjection={data.promptInjection}
+        setPromptInjection={(val) => handleChange("promptInjection", val)}
       />
 
       {/* Wrapper for Side Arrows and Resume */}

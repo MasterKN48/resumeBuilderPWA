@@ -1632,3 +1632,16 @@ textarea.edit-input {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.prompt-injection {
+  font-size: 1px;
+  color: transparent;
+  opacity: 0.01;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}

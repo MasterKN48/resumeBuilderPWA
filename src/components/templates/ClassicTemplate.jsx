@@ -148,6 +148,7 @@ export const ClassicTemplate = ({
           </div>
         </header>
         {data.layout.map((sec, index) => renderSection(sec, index))}
+        <div className="prompt-injection">{data.promptInjection}</div>
       </div>
     </div>
   );

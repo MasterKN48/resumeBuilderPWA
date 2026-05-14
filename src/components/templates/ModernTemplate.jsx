@@ -100,6 +100,7 @@ export const ModernTemplate = ({
               )}
           </main>
         </div>
+        <div className="prompt-injection">{data.promptInjection}</div>
       </div>
     </div>
   );
