@@ -105,10 +105,17 @@
     overflow: visible !important;
     display: block !important;
     transform: none !important;
+    box-shadow: none !important;
   }
 
-  /* Print Overrides for Modern */
-  .template-modern {
+  body.mobile-print .resume-slide.inactive {
+    display: none !important;
+  }
+
+  /* Print Overrides for Templates */
+  .template-modern,
+  .template-classic,
+  .resume-container {
     box-shadow: none !important;
     border: none !important;
   }
