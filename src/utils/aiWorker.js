@@ -79,8 +79,8 @@ self.addEventListener("message", async (event) => {
     }
   } else if (type === "generate") {
     try {
-      const { system_prompt } = event.data;
-      console.log("### AI Starting Generation ###", { model_id, messageCount: messages.length });
+      const { system_prompt, tools } = event.data;
+      console.log("### AI Starting Generation ###", { model_id, messageCount: messages.length, hasTools: !!tools });
       
       const generator = await TextGenerationPipeline.getInstance(model_id);
 
@@ -97,15 +97,22 @@ self.addEventListener("message", async (event) => {
         { role: "system", content: system_prompt },
         ...messages,
       ];
-      // console.log("### formattedMessages ###\n", formattedMessages);
-      const output = await generator(formattedMessages, {
+      
+      const generationParams = {
         max_new_tokens: 1024,
         temperature: 0.0, // Much lower for precision
         do_sample: false,
         top_p: 0.9,
         streamer,
         ...params,
-      });
+      };
+
+      if (tools) {
+        generationParams.tokenizer_encode_kwargs = { tools };
+      }
+
+      const output = await generator(formattedMessages, generationParams);
+
 
       // Final content from messages format
       const finalContent = output[0].generated_text.at(-1).content;

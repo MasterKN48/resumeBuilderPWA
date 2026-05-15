@@ -248,8 +248,14 @@ export default function App() {
         setParseProgress(50);
         parsedJson = await parseResumeWithAI(text, setStatus);
       } catch (aiError) {
-        console.warn("AI Parsing failed, falling back to heuristics:", aiError);
-        parsedJson = parseResumeText(text);
+        console.error("AI Parsing failed:", aiError);
+        showToast(
+          aiError.message === "AI_JSON_PARSE_FAILED"
+            ? "AI failed to parse your resume structure. Please try a different file."
+            : "Parsing error: " + aiError.message,
+          "error",
+        );
+        return; // Stop execution
       }
 
       // 3. Finalize and Save
@@ -462,7 +468,7 @@ export default function App() {
         </div>
       )}
 
-      <AIContainer resumeData={data} showToast={showToast} />
+      <AIContainer resumeData={data} showToast={showToast} onEditField={handleChange} />
 
       <div className="toast-container">
         {toasts.map((toast) => (

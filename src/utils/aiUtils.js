@@ -6,36 +6,34 @@ export function minifyResumeData(data) {
   if (!data) return "";
 
   const minified = {
-    personal: {
-      name: data.name,
-      title: data.profession,
-      email: data.email,
-      phone: data.phone,
-      linkedIn: data.linkedin,
-      portfolio: data.portfolio,
-      location: data.location,
-    },
-    exp: data.experience?.map((e) => ({
-      role: e.title,
+    name: data.name,
+    profession: data.profession,
+    email: data.email,
+    phone: data.phone,
+    linkedin: data.linkedin,
+    portfolio: data.portfolio,
+    location: data.location,
+    summary: data.summary,
+    experience: data.experience?.map((e) => ({
+      title: e.title,
       company: e.company,
-      tasks: e.bullets,
+      bullets: e.bullets,
       date: e.date,
       location: e.location,
     })),
-    edu: data.education?.map((e) => ({
+    education: data.education?.map((e) => ({
       degree: e.degree,
       institution: e.institution,
       date: e.date,
       location: e.location,
     })),
-    skills: data.skills?.map((s) => s.name),
+    skills: data.skills?.map((s) => ({ name: s.name })),
     projects: data.projects?.map((p) => ({
       name: p.name,
       description: p.description,
       link: p.link,
     })),
-    summary: data.summary,
-    certs: data.certifications?.map((c) => ({
+    certifications: data.certifications?.map((c) => ({
       name: c.name,
       org: c.org,
       year: c.year,
@@ -119,19 +117,30 @@ export function formatMarkdown(text) {
  * Supports streaming and standard chat completion format.
  */
 export async function fetchRemoteAI(messages, config, onStream) {
-  const { url, key, model } = config;
-  
-  const response = await fetch(url, {
+  const { url, key, model, tools } = config;
+
+  const body = {
+    model: model || "gpt-3.5-turbo",
+    messages,
+    stream: !!onStream,
+  };
+
+  if (tools) {
+    body.tools = tools;
+    // body.tool_choice = "auto"; // Default is auto
+  }
+
+  const chatUrl = url.endsWith("/chat/completions")
+    ? url
+    : `${url.replace(/\/$/, "")}/chat/completions`;
+
+  const response = await fetch(chatUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${key}`
+      Authorization: `Bearer ${key}`,
     },
-    body: JSON.stringify({
-      model: model || "gpt-3.5-turbo",
-      messages,
-      stream: !!onStream
-    })
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -148,36 +157,63 @@ export async function fetchRemoteAI(messages, config, onStream) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let fullContent = "";
+  let buffer = "";
 
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n");
-      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop(); // Keep the last partial line in the buffer
+
       for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const dataStr = line.substring(6).trim();
-          if (dataStr === "[DONE]") continue;
-          
-          try {
-            const json = JSON.parse(dataStr);
-            const content = json.choices[0]?.delta?.content || "";
-            if (content) {
-              fullContent += content;
-              onStream(content);
-            }
-          } catch (e) {
-            // Ignore partial or invalid JSON
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith("data:")) continue;
+
+        const dataStr = trimmed.replace(/^data:\s*/, "").trim();
+        if (dataStr === "[DONE]") continue;
+
+        try {
+          const json = JSON.parse(dataStr);
+          const content = json.choices[0]?.delta?.content || "";
+          if (content) {
+            fullContent += content;
+            onStream(content);
           }
+        } catch (e) {
+          // Ignore partial or invalid JSON in a single SSE message
+          console.warn("Failed to parse SSE JSON:", dataStr, e);
         }
       }
     }
   } finally {
     reader.releaseLock();
   }
-  
+
   return fullContent;
 }
+
+export async function checkRemoteStatus(config) {
+  const { url, key } = config;
+  if (!url || !key) return false;
+
+  try {
+    const modelsUrl = url.endsWith("/chat/completions")
+      ? url.replace("/chat/completions", "/models")
+      : `${url.replace(/\/$/, "")}/models`;
+
+    // Attempt to hit the models endpoint as a lightweight connectivity check
+    const response = await fetch(modelsUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${key}`,
+      },
+    });
+    return response.ok;
+  } catch (e) {
+    return false;
+  }
+}
+

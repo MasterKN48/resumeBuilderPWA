@@ -35,8 +35,36 @@ export const useResumeData = () => {
     updateDocumentTitle(data);
   }, [data]);
 
-  const handleChange = (key, value) => {
-    setData((prev) => ({ ...prev, [key]: value }));
+  const handleChange = (path, value) => {
+    setData((prev) => {
+      const keys = path.split(".");
+      const update = (obj, pathKeys) => {
+        const [currentKey, ...remainingKeys] = pathKeys;
+        
+        // Final key in the path
+        if (remainingKeys.length === 0) {
+          if (Array.isArray(obj)) {
+            const newArr = [...obj];
+            newArr[currentKey] = value;
+            return newArr;
+          }
+          return { ...obj, [currentKey]: value };
+        }
+
+        // Mid-path: handle nested objects or arrays
+        if (Array.isArray(obj)) {
+          const newArr = [...obj];
+          newArr[currentKey] = update(obj[currentKey] || {}, remainingKeys);
+          return newArr;
+        } else {
+          return {
+            ...obj,
+            [currentKey]: update(obj[currentKey] || {}, remainingKeys),
+          };
+        }
+      };
+      return update(prev, keys);
+    });
   };
 
   const handleHeadingChange = (key, value) => {

@@ -3,18 +3,19 @@ import { AIChatButton } from "./AIChatButton";
 import { AIChatWindow } from "./AIChatWindow";
 import { AI_CONFIG } from "../../constants/aiConfig";
 import { SUMMARIZER_PROMPT } from "../../constants/prompts";
-import { minifyResumeData, fetchRemoteAI } from "../../utils/aiUtils";
+import { minifyResumeData, fetchRemoteAI, checkRemoteStatus } from "../../utils/aiUtils";
 import { getAIConfig, saveAIConfig } from "../../utils/aiConfigManager";
 import "../../styles/ai-chatbot.css";
 
 const INITIAL_MESSAGES = [
   {
     role: "ai",
-    content: "Hello! I'm your AI career assistant. How can I help you with your resume today?",
+    content:
+      "Hello! I'm your AI career assistant. How can I help you with your resume today?",
   },
 ];
 
-export function AIContainer({ resumeData, showToast }) {
+export function AIContainer({ resumeData, showToast, onEditField }) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState("idle"); // idle, downloading, loading, ready, error
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -47,8 +48,8 @@ export function AIContainer({ resumeData, showToast }) {
 
     const tick = () => {
       if (streamingBuffer.current.length > 0) {
-        // Reduced speed: 1-2 characters per tick for a very deliberate pace
-        const charCount = streamingBuffer.current.length > 150 ? 4 : 1;
+        // Increased speed: 2-3 characters per tick for a snappier feel
+        const charCount = streamingBuffer.current.length > 150 ? 8 : 3;
         const chunk = streamingBuffer.current.slice(0, charCount);
         streamingBuffer.current = streamingBuffer.current.slice(charCount);
 
@@ -65,7 +66,7 @@ export function AIContainer({ resumeData, showToast }) {
           return [...prev, { role: "ai", content: chunk }];
         });
 
-        setTimeout(tick, 60); // 60ms for a very calm, readable pace
+        setTimeout(tick, 25); // 25ms for a snappy but still smooth flow
       } else {
         isProcessingBuffer.current = false;
         if (workerDone.current) {
@@ -81,9 +82,51 @@ export function AIContainer({ resumeData, showToast }) {
       const updated = [...prev];
       const last = updated[updated.length - 1];
       if (last && last.role === "ai") {
-        updated[updated.length - 1] = { 
-          ...last, 
-          duration: generationStats.current.duration 
+        let content = last.content;
+
+        // Tool Call Parsing
+        // Pattern: [tool_name(param1="value1", param2="value2")]
+        const toolCallRegex = /\[(\w+)\((.*?)\)\]/g;
+        let match;
+        const toolCalls = [];
+
+        while ((match = toolCallRegex.exec(content)) !== null) {
+          const toolName = match[1];
+          const paramsString = match[2];
+          const params = {};
+
+          // Parse parameters: param="value"
+          const paramRegex = /(\w+)="(.*?)"/g;
+          let paramMatch;
+          while ((paramMatch = paramRegex.exec(paramsString)) !== null) {
+            params[paramMatch[1]] = paramMatch[2];
+          }
+
+          toolCalls.push({ name: toolName, params });
+        }
+
+        // Execute Tool Calls
+        if (toolCalls.length > 0) {
+          console.log("### AI Tool Calls Detected ###", toolCalls);
+          toolCalls.forEach((call) => {
+            if (
+              call.name === "edit_field" &&
+              call.params.path &&
+              call.params.value
+            ) {
+              onEditField(call.params.path, call.params.value);
+              showToast(`Updated ${call.params.path}`, "success");
+            }
+          });
+
+          // Remove tool call strings from visible content
+          content = content.replace(toolCallRegex, "").trim();
+        }
+
+        updated[updated.length - 1] = {
+          ...last,
+          content: content || "I've updated your resume as requested.",
+          duration: generationStats.current.duration,
         };
       }
       return updated;
@@ -106,12 +149,16 @@ export function AIContainer({ resumeData, showToast }) {
     console.log("Initializing AI Worker with model:", apiConfig.localModelId);
     worker.current = new Worker(
       new URL("../../utils/aiWorker.js", import.meta.url),
-      { type: "module" }
+      { type: "module" },
     );
 
     worker.current.onerror = (e) => {
       console.error("### AI Worker Global Error ###", e);
-      showToast("🚨 AI Assistant Crashed: " + (e.message || "Unknown error (likely memory limit)"), "error");
+      showToast(
+        "🚨 AI Assistant Crashed: " +
+          (e.message || "Unknown error (likely memory limit)"),
+        "error",
+      );
       setIsGenerating(false);
       setStatus("error");
     };
@@ -134,28 +181,39 @@ export function AIContainer({ resumeData, showToast }) {
         case "summarize_complete":
           const pendingMsg = pendingMessageRef.current;
           const nextMessages = [
-            { role: "system", content: `Previous conversation summary: ${content}` },
+            {
+              role: "system",
+              content: `Previous conversation summary: ${content}`,
+            },
             { role: "user", content: pendingMsg },
           ];
           setMessages(nextMessages);
 
           const minData = minifyResumeData(resumeDataRef.current);
-          const sysPrompt = `RESUME CONTEXT:\n${minData}\n\nCORE INSTRUCTIONS:\n${AI_CONFIG.SYSTEM_PROMPT}`.trim();
+          const sysPrompt =
+            `RESUME CONTEXT:\n${minData}\n\nCORE INSTRUCTIONS:\n${AI_CONFIG.SYSTEM_PROMPT}`.trim();
 
           worker.current.postMessage({
             type: "generate",
             model_id: apiConfig.localModelId,
             system_prompt: sysPrompt,
             messages: nextMessages,
+            tools: AI_CONFIG.TOOLS,
           });
           pendingMessageRef.current = null;
           break;
 
         case "complete":
-          const duration = ((Date.now() - generationStartTime.current) / 1000).toFixed(1);
+          const duration = (
+            (Date.now() - generationStartTime.current) /
+            1000
+          ).toFixed(1);
           generationStats.current = { duration: `${duration}s` };
           workerDone.current = true;
-          if (!isProcessingBuffer.current && streamingBuffer.current.length === 0) {
+          if (
+            !isProcessingBuffer.current &&
+            streamingBuffer.current.length === 0
+          ) {
             finalizeGeneration();
           }
           break;
@@ -176,7 +234,7 @@ export function AIContainer({ resumeData, showToast }) {
       setStatus("idle");
       setDownloadProgress(0);
       initWorker();
-      
+
       worker.current.postMessage({
         type: "load",
         model_id: apiConfig.localModelId,
@@ -191,7 +249,7 @@ export function AIContainer({ resumeData, showToast }) {
       const isSwitchingToRemote = apiConfig.useRemote;
       // If we are already in Local AI, check if the model ID has changed
       // (The dependency array will trigger this useEffect on ID change)
-      
+
       // Check if the current worker's model differs from the target
       // We'll trust the dependency array but we need to terminate old worker
       console.log("### Mode/Model Change: Terminating Previous Worker ###");
@@ -209,11 +267,32 @@ export function AIContainer({ resumeData, showToast }) {
         setMessages(INITIAL_MESSAGES);
       }
     }
-    
+
     return () => {
       // Termination handled by the logic above and the cleanup effect
     };
-  }, [apiConfig.localModelId, apiConfig.disableAutoDownload, isOpen, apiConfig.useRemote]);
+  }, [
+    apiConfig.localModelId,
+    apiConfig.disableAutoDownload,
+    isOpen,
+    apiConfig.useRemote,
+  ]);
+  
+  // Handle remote status checking
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (apiConfig.useRemote) {
+        if (apiConfig.key && apiConfig.url) {
+          // If we have config, check if it's actually working
+          const isReady = await checkRemoteStatus(apiConfig);
+          setStatus(isReady ? "ready" : "idle");
+        } else {
+          setStatus("idle");
+        }
+      }
+    };
+    checkStatus();
+  }, [apiConfig.useRemote, apiConfig.key, apiConfig.url]);
 
   // Handle manual load trigger when chat opens
   useEffect(() => {
@@ -241,7 +320,10 @@ export function AIContainer({ resumeData, showToast }) {
 
   const handleDownload = () => {
     setStatus("downloading");
-    worker.current.postMessage({ type: "load", model_id: apiConfig.localModelId });
+    worker.current.postMessage({
+      type: "load",
+      model_id: apiConfig.localModelId,
+    });
   };
 
   const handleSendMessage = async (content) => {
@@ -251,7 +333,8 @@ export function AIContainer({ resumeData, showToast }) {
     generationStartTime.current = Date.now();
 
     const minifiedData = minifyResumeData(resumeDataRef.current);
-    const contextPrompt = `RESUME CONTEXT:\n${minifiedData}\n\nCORE INSTRUCTIONS:\n${AI_CONFIG.SYSTEM_PROMPT}`.trim();
+    const contextPrompt =
+      `RESUME CONTEXT:\n${minifiedData}\n\nCORE INSTRUCTIONS:\n${AI_CONFIG.SYSTEM_PROMPT}`.trim();
 
     if (apiConfig.useRemote && apiConfig.key) {
       try {
@@ -263,20 +346,30 @@ export function AIContainer({ resumeData, showToast }) {
 
         const finalMessages = [
           { role: "system", content: contextPrompt },
-          ...filteredMessages
+          ...filteredMessages,
         ];
 
-        setMessages(prev => [...prev, { role: "ai", content: "" }]);
+        setMessages((prev) => [...prev, { role: "ai", content: "" }]);
 
-        await fetchRemoteAI(finalMessages, apiConfig, (chunk) => {
-          streamingBuffer.current += chunk;
-          processBuffer();
-        });
+        await fetchRemoteAI(
+          finalMessages,
+          { ...apiConfig, tools: AI_CONFIG.TOOLS },
+          (chunk) => {
+            streamingBuffer.current += chunk;
+            processBuffer();
+          },
+        );
 
-        const duration = ((Date.now() - generationStartTime.current) / 1000).toFixed(1);
+        const duration = (
+          (Date.now() - generationStartTime.current) /
+          1000
+        ).toFixed(1);
         generationStats.current = { duration: `${duration}s` };
         workerDone.current = true;
-        if (!isProcessingBuffer.current && streamingBuffer.current.length === 0) {
+        if (
+          !isProcessingBuffer.current &&
+          streamingBuffer.current.length === 0
+        ) {
           finalizeGeneration();
         }
       } catch (error) {
@@ -309,6 +402,7 @@ export function AIContainer({ resumeData, showToast }) {
       model_id: apiConfig.localModelId,
       system_prompt: contextPrompt,
       messages: filteredMessages,
+      tools: AI_CONFIG.TOOLS,
     });
   };
 

@@ -357,7 +357,7 @@ export function AIChatWindow({
               </>
             )}
           </div>
-        ) : status === "idle" || status === "downloading" ? (
+        ) : (status === "idle" || status === "downloading") && !apiConfig.useRemote ? (
           <div className="ai-setup-view">
             <div className="ai-setup-icon">
               {status === "downloading" ? (
@@ -447,7 +447,7 @@ export function AIChatWindow({
         )}
       </div>
 
-      {(status === "ready" || apiConfig.useRemote) && !showSettings && (
+      {(status === "ready" || apiConfig.useRemote) && !showSettings && !isGenerating && (
         <div className="ai-chat-input-area">
           <div className="ai-chat-input-container">
             <input

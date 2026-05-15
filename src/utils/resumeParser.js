@@ -278,21 +278,13 @@ export const parseResumeWithAI = async (text, onStatus) => {
   // If user has configured Remote AI, use that instead of local worker
   if (config.useRemote && config.key) {
     if (onStatus) onStatus("Analyzing with Remote AI...");
-    const response = await fetchRemoteAI(
-      [{ role: "user", content: userMessage }],
-      config,
-      systemPrompt,
-    );
+    const messages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ];
 
-    // Remote AI doesn't stream here (it's a single call), so we wait for full response
-    let fullText = "";
-    const reader = response.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      fullText += value;
-    }
-    return processAIResponse(fullText);
+    const response = await fetchRemoteAI(messages, config);
+    return processAIResponse(response);
   }
 
   // Otherwise, use local worker
@@ -347,39 +339,46 @@ const processAIResponse = (content) => {
     jsonStr = jsonStr.split("```")[1].split("```")[0].trim();
   }
 
-  const parsed = JSON.parse(jsonStr);
+  try {
+    const parsed = JSON.parse(jsonStr);
 
-  // Post-process: Add UUIDs and handle structure with strict length limits
-  return {
-    ...parsed,
-    name: parsed.fullName || parsed.name || "",
-    profession: parsed.profession || "",
-    email: parsed.email || "",
-    phone: parsed.phone || "",
-    location: parsed.location || "",
-    linkedin: parsed.linkedin || "",
-    portfolio: parsed.portfolioUrl || "",
-    summary: parsed.summary || "",
-    experience: (parsed.workExperience || []).slice(0, 4).map((exp) => ({
-      ...exp,
-      id: uuidv4(),
-      bullets: (exp.bullets || []).slice(0, 6),
-    })),
-    projects: (parsed.projects || []).slice(0, 5).map((proj) => ({
-      ...proj,
-      id: uuidv4(),
-    })),
-    education: (parsed.education || []).slice(0, 2).map((edu) => ({
-      ...edu,
-      id: uuidv4(),
-    })),
-    skills: (parsed.skills || []).slice(0, 10).map((skill) => ({
-      id: uuidv4(),
-      name: typeof skill === "string" ? skill : skill.name || "",
-    })),
-    certifications: (parsed.certifications || []).slice(0, 2).map((cert) => ({
-      ...cert,
-      id: uuidv4(),
-    })),
-  };
+    // Post-process: Add UUIDs and handle structure with strict length limits
+    return {
+      ...parsed,
+      name: parsed.fullName || parsed.name || "",
+      profession: parsed.profession || "",
+      email: parsed.email || "",
+      phone: parsed.phone || "",
+      location: parsed.location || "",
+      linkedin: parsed.linkedin || "",
+      portfolio: parsed.portfolioUrl || parsed.portfolio || "",
+      summary: parsed.summary || "",
+      experience: (parsed.experience || parsed.workExperience || [])
+        .slice(0, 5)
+        .map((exp) => ({
+          ...exp,
+          id: uuidv4(),
+          bullets: (exp.bullets || []).slice(0, 6),
+        })),
+      projects: (parsed.projects || []).slice(0, 5).map((proj) => ({
+        ...proj,
+        id: uuidv4(),
+      })),
+      education: (parsed.education || []).slice(0, 3).map((edu) => ({
+        ...edu,
+        id: uuidv4(),
+      })),
+      skills: (parsed.skills || []).slice(0, 15).map((skill) => ({
+        id: uuidv4(),
+        name: typeof skill === "string" ? skill : skill.name || "",
+      })),
+      certifications: (parsed.certifications || []).slice(0, 3).map((cert) => ({
+        ...cert,
+        id: uuidv4(),
+      })),
+    };
+  } catch (e) {
+    console.error("AI Response Parsing Failed:", e, jsonStr);
+    throw new Error("AI_JSON_PARSE_FAILED");
+  }
 };
