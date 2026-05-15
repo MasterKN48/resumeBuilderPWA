@@ -38,6 +38,7 @@ export function minifyResumeData(data) {
       org: c.org,
       year: c.year,
     })),
+    layout: data.layout?.map((s, i) => `${i}: ${s.type}`),
   };
 
   return JSON.stringify(minified);

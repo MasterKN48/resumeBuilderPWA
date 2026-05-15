@@ -115,6 +115,7 @@ export default function App() {
     handleDragStart,
     handleDragOver,
     handleDrop,
+    moveSection,
   } = useLayoutManager(data, setData);
 
   const { showInstallBanner, handleInstallClick, dismissInstall } =
@@ -468,7 +469,24 @@ export default function App() {
         </div>
       )}
 
-      <AIContainer resumeData={data} showToast={showToast} onEditField={handleChange} />
+      <AIContainer 
+        resumeData={data} 
+        showToast={showToast} 
+        onEditField={handleChange} 
+        onAddItem={addItem}
+        onDeleteItem={deleteItem}
+        onMoveSection={moveSection}
+        onRemoveSection={deleteSection}
+        onPrint={handlePrint}
+        onChangeTemplate={setTemplate}
+        onAddPageBreak={insertPageBreak}
+        onChangeFontSize={setFontSize}
+        onChangeFontFamily={(font) => {
+          setFontTheme("custom");
+          setCustomFont(font);
+        }}
+        onChangeFontScale={(scale) => handleChange("fontScale", scale)}
+      />
 
       <div className="toast-container">
         {toasts.map((toast) => (

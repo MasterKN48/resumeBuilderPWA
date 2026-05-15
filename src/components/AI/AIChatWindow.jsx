@@ -201,7 +201,10 @@ export function AIChatWindow({
                     setTimeout(() => window.location.reload(), 1000);
                   }}
                 >
-                  Remote API
+                  <div className="ai-toggle-content">
+                    Remote API
+                    <span className="ai-recommend-badge">Best Experience</span>
+                  </div>
                 </button>
               </div>
             </div>

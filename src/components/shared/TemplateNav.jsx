@@ -30,16 +30,21 @@ export const TemplateNavButtons = ({ setTemplate }) => {
 export const IndicatorDots = ({ template, setTemplate }) => {
   return (
     <div className="template-indicator hide-print">
-      <div
-        className={`indicator-dot ${template === "classic" ? "active" : ""}`}
-        onClick={() => setTemplate("classic")}
-        style={{ cursor: "pointer" }}
-      ></div>
-      <div
-        className={`indicator-dot ${template === "modern" ? "active" : ""}`}
-        onClick={() => setTemplate("modern")}
-        style={{ cursor: "pointer" }}
-      ></div>
+      <div className="indicator-dots-row">
+        <div
+          className={`indicator-dot ${template === "classic" ? "active" : ""}`}
+          onClick={() => setTemplate("classic")}
+          style={{ cursor: "pointer" }}
+        ></div>
+        <div
+          className={`indicator-dot ${template === "modern" ? "active" : ""}`}
+          onClick={() => setTemplate("modern")}
+          style={{ cursor: "pointer" }}
+        ></div>
+      </div>
+      <span className="template-name-label">
+        {template.charAt(0).toUpperCase() + template.slice(1)}
+      </span>
     </div>
   );
 };

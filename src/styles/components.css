@@ -148,16 +148,40 @@
 /* Swipe Indicator Dots */
 .template-indicator {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.indicator-dots-row {
+  display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.template-name-label {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent-color);
+  opacity: 0.8;
+  animation: fadeIn 0.3s ease;
 }
 
 @media (max-width: 640px) {
   .template-indicator {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    gap: 8px;
+  }
+  
+  .template-name-label {
+    font-size: 12px;
+    letter-spacing: 1.5px;
   }
 }
 

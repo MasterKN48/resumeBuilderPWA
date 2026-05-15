@@ -15,7 +15,21 @@ const INITIAL_MESSAGES = [
   },
 ];
 
-export function AIContainer({ resumeData, showToast, onEditField }) {
+export function AIContainer({ 
+  resumeData, 
+  showToast, 
+  onEditField, 
+  onAddItem, 
+  onDeleteItem, 
+  onMoveSection, 
+  onRemoveSection, 
+  onPrint, 
+  onChangeTemplate, 
+  onAddPageBreak,
+  onChangeFontSize,
+  onChangeFontFamily,
+  onChangeFontScale
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState("idle"); // idle, downloading, loading, ready, error
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -95,11 +109,13 @@ export function AIContainer({ resumeData, showToast, onEditField }) {
           const paramsString = match[2];
           const params = {};
 
-          // Parse parameters: param="value"
-          const paramRegex = /(\w+)="(.*?)"/g;
+          // Parse parameters: param="value", param='value', or param=value
+          const paramRegex = /(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^,\s\]\)]+))/g;
           let paramMatch;
           while ((paramMatch = paramRegex.exec(paramsString)) !== null) {
-            params[paramMatch[1]] = paramMatch[2];
+            const key = paramMatch[1];
+            const value = paramMatch[2] || paramMatch[3] || paramMatch[4];
+            params[key] = value;
           }
 
           toolCalls.push({ name: toolName, params });
@@ -116,6 +132,53 @@ export function AIContainer({ resumeData, showToast, onEditField }) {
             ) {
               onEditField(call.params.path, call.params.value);
               showToast(`Updated ${call.params.path}`, "success");
+            } else if (call.name === "add_item" && call.params.section) {
+              onAddItem(call.params.section);
+              showToast(`Added new item to ${call.params.section}`, "success");
+            } else if (
+              call.name === "delete_item" &&
+              call.params.section &&
+              call.params.index !== undefined
+            ) {
+              onDeleteItem(call.params.section, parseInt(call.params.index));
+              showToast(`Deleted item from ${call.params.section}`, "success");
+            } else if (
+              call.name === "move_section" &&
+              call.params.oldIndex !== undefined &&
+              call.params.newIndex !== undefined
+            ) {
+              onMoveSection(
+                parseInt(call.params.oldIndex),
+                parseInt(call.params.newIndex),
+              );
+              showToast("Moved section", "success");
+            } else if (
+              call.name === "delete_section" &&
+              call.params.index !== undefined
+            ) {
+              onRemoveSection(parseInt(call.params.index));
+              showToast("Deleted section", "success");
+            } else if (call.name === "print_resume") {
+              onPrint();
+              showToast("Opening print dialog...", "success");
+            } else if (call.name === "change_template" && call.params.template) {
+              onChangeTemplate(call.params.template);
+              showToast(`Switched to ${call.params.template} template`, "success");
+            } else if (call.name === "add_page_break" && call.params.index !== undefined) {
+              onAddPageBreak(parseInt(call.params.index));
+              showToast("Inserted page break", "success");
+            } else if (call.name === "delete_page_break" && call.params.index !== undefined) {
+              onRemoveSection(parseInt(call.params.index));
+              showToast("Removed page break", "success");
+            } else if (call.name === "set_font_style" && call.params.fontName) {
+              onChangeFontFamily(call.params.fontName);
+              showToast(`Changed font to ${call.params.fontName}`, "success");
+            } else if (call.name === "set_font_size" && call.params.size) {
+              onChangeFontSize(call.params.size);
+              showToast(`Font size set to ${call.params.size}`, "success");
+            } else if (call.name === "set_font_scale" && call.params.scale !== undefined) {
+              onChangeFontScale(parseFloat(call.params.scale));
+              showToast(`Scale adjusted to ${call.params.scale}`, "success");
             }
           });
 

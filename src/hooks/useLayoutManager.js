@@ -26,6 +26,13 @@ export const useLayoutManager = (data, setData) => {
     setData((prev) => ({ ...prev, layout: newLayout }));
   };
 
+  const moveSection = (oldIndex, newIndex) => {
+    const newLayout = [...data.layout];
+    const [item] = newLayout.splice(oldIndex, 1);
+    newLayout.splice(newIndex, 0, item);
+    setData((prev) => ({ ...prev, layout: newLayout }));
+  };
+
   const handleDragStart = (index, type, parentIndex = null) => {
     setDragSource({ index, type, parentIndex });
   };
@@ -80,5 +87,6 @@ export const useLayoutManager = (data, setData) => {
     handleDragStart,
     handleDragOver,
     handleDrop,
+    moveSection,
   };
 };
