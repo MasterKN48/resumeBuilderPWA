@@ -21,18 +21,34 @@ env.useBrowserCache = true;
 class TextGenerationPipeline {
   static model_id = null;
   static instance = null;
+  static hasFP16 = null; // Cache for feature detection
 
   static async getInstance(model_id, progress_callback = null) {
     if (this.instance === null || this.model_id !== model_id) {
       this.model_id = model_id;
       try {
         console.log("### Attempting WebGPU Initialization...");
+        
+        // Mobile Support Check: Detect shader-f16 capability for dtype selection
+        if (this.hasFP16 === null) {
+          try {
+            const adapter = await navigator.gpu?.requestAdapter();
+            this.hasFP16 = !!adapter?.features?.has("shader-f16");
+          } catch (e) {
+            console.warn("### Could not request WebGPU adapter:", e);
+            this.hasFP16 = false;
+          }
+        }
+        
+        const dtype = this.hasFP16 ? "q4f16" : "q4";
+        console.log(`### Device Capability: hasFP16=${this.hasFP16} -> Using dtype: ${dtype}`);
+
         this.instance = await pipeline("text-generation", model_id, {
           progress_callback,
           device: "webgpu",
-          dtype: "q4f16",
+          dtype: dtype,
         });
-        console.log("### WebGPU Pipeline Ready");
+        console.log(`### WebGPU Pipeline Ready (${dtype})`);
       } catch (e) {
         console.warn("### WebGPU failed, falling back to WASM/CPU:", e);
         this.instance = await pipeline("text-generation", model_id, {
