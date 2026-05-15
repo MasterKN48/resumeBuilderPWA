@@ -17,6 +17,7 @@ import {
 import { InstallBanner } from "./components/shared/InstallBanner";
 import { SectionRenderer } from "./components/SectionRenderer";
 import { FileText } from "lucide-preact";
+import { Toast } from "./components/shared/Toast";
 
 // AI Component
 import { AIContainer } from "./components/AI/AIContainer";
@@ -26,20 +27,31 @@ import { ClassicTemplate } from "./components/templates/ClassicTemplate";
 import { ModernTemplate } from "./components/templates/ModernTemplate";
 
 export default function App() {
+  const [toasts, setToasts] = useState([]);
+
+  const showToast = (message, type = "info") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   useEffect(() => {
     const handleError = (event) => {
       const msg = event.error?.message || event.message || "Unknown error";
       console.error("Global Error Caught:", event);
       if (msg.includes("out of memory") || msg.includes("Worker") || msg.includes("GPU")) {
-        alert("🚨 App Error: " + msg);
+        showToast("Stability Alert: " + msg, "error");
       }
     };
 
     const handleRejection = (event) => {
       console.error("Unhandled Rejection:", event.reason);
       const msg = event.reason?.message || String(event.reason);
-      if (msg.includes("GPU") || msg.includes("memory")) {
-        alert("🚨 AI Error: " + msg);
+      if (msg.includes("Out of Memory") || msg.includes("GPU")) {
+        showToast("System Alert: " + msg, "error");
       }
     };
 
@@ -101,7 +113,7 @@ export default function App() {
     handleDrop,
   } = useLayoutManager(data, setData);
 
-  const { showInstallBanner, handleInstallClick, dismissInstall } = usePWA();
+  const { showInstallBanner, handleInstallClick, dismissInstall } = usePWA(showToast);
   const { scale, viewportHeight } = useScale(template, data, resumeRefs);
   const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe(setTemplate);
 
@@ -176,7 +188,7 @@ export default function App() {
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("File size exceeds 10MB limit.");
+      showToast("File size exceeds 10MB limit.", "error");
       return;
     }
 
@@ -232,7 +244,7 @@ export default function App() {
       // );
     } catch (error) {
       console.error("Critical parsing error:", error);
-      alert("Error parsing PDF. Please try again or use a different file.");
+      showToast("Error parsing PDF. Please try again or use a different file.", "error");
     } finally {
       setTimeout(() => {
         setIsParsing(false);
@@ -401,7 +413,18 @@ export default function App() {
         </div>
       )}
 
-      <AIContainer resumeData={data} />
+      <AIContainer resumeData={data} showToast={showToast} />
+
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
     </>
   );
 }

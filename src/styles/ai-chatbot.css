@@ -348,8 +348,26 @@
 }
 
 .ai-clear-cache-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: #ef4444;
+  background: #fecaca;
+  color: #b91c1c;
+}
+
+.ai-apply-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ai-apply-btn:hover {
+  filter: brightness(1.1);
   transform: translateY(-1px);
 }
 

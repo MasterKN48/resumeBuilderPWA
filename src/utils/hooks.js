@@ -1,6 +1,6 @@
 import { useState, useEffect } from "preact/hooks";
 
-export const usePWA = () => {
+export const usePWA = (showToast) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
@@ -63,9 +63,10 @@ export const usePWA = () => {
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`User response to the install prompt: ${outcome}`);
       setDeferredPrompt(null);
-    } else {
-      alert(
-        "To install PocketResume, please use your browser's 'Add to Home Screen' or 'Install' menu option."
+    } else if (showToast) {
+      showToast(
+        "To install, use your browser's 'Add to Home Screen' or 'Install' menu option.",
+        "info"
       );
     }
     setShowInstallBanner(false);

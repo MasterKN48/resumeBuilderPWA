@@ -31,7 +31,8 @@ The project is built using **Preact** for high performance and a small bundle si
 
 ## ✨ Features
 
-- **AI Career Assistant:** On-device WebGPU-powered AI chat for real-time resume optimization and career advice.
+- **Dual-Backend AI Engine:** On-device WebGPU-powered AI with automatic WASM/CPU fallback for maximum compatibility across all devices.
+- **Remote AI Fallback:** Support for OpenAI-compatible APIs (OpenAI, Groq, local LLMs) as a high-performance alternative to on-device inference.
 - **AI Resume Parsing:** Extract data directly from existing PDF resumes using semantic AI analysis (no server-side processing).
 - **PWA & Offline:** Works without an internet connection and can be installed as a native app.
 - **Live Templates:** Instantly switch between "Classic" and "Modern" layouts.
@@ -46,20 +47,15 @@ The project is built using **Preact** for high performance and a small bundle si
 
 ### `/src`
 
-- **`App.jsx`**: The main entry point. It orchestrates hooks and renders the high-level layout.
+- **`App.jsx`**: The main entry point. Orchestrates global state, handles PWA lifecycle, and implements global error/OOM detection for mobile stability.
 - **`/components/AI`**:
-  - **`AIContainer.jsx`**: Orchestrates state and messages between the UI and the AI Worker.
-  - **`aiWorker.js`**: Web Worker handling heavy AI inference off-main-thread.
-- **`/hooks`**:
-  - **`useResumeData.js`**: Manages the main state, local storage persistence, and data updates.
-  - **`useSettings.js`**: Handles theme, font sizing, and template switching.
-  - **`useLayoutManager.js`**: Manages section ordering, visibility, and page breaks.
-- **`/styles`**:
-  - **`variables.css`**: Centralized design tokens (colors, spacing, shadows).
-  - **`print.css`**: Specialized media queries for pixel-perfect PDF export.
-  - **`ai-chatbot.css`**: Custom animations and responsive layouts for the AI interface.
+  - **`AIContainer.jsx`**: Orchestrates state between the UI, the Web Worker, and Remote API fallbacks.
+  - **`AIChatWindow.jsx`**: Feature-rich chat interface with a dedicated Settings panel for custom model IDs and Remote API keys.
 - **`/utils`**:
-  - **`resumeParser.js`**: Logic for AI-powered resume extraction.
+  - **`aiWorker.js`**: Web Worker handling local AI inference. Supports automatic WebGPU-to-WASM fallback.
+  - **`aiConfigManager.js`**: Centralized manager to sync AI settings (Model IDs, API keys) between the chat assistant and resume parser.
+  - **`resumeParser.js`**: Logic for AI-powered resume extraction, now optimized to use the unified AI settings.
+  - **`aiUtils.js`**: Utilities for markdown formatting and Remote API streaming.
   - **`pdfParser.js`**: Client-side PDF text extraction engine.
 
 ---

@@ -2,6 +2,9 @@ import { v4 as uuidv4 } from "uuid";
 import { AI_CONFIG } from "../constants/aiConfig";
 import { RESUME_PARSER_PROMPT } from "../constants/prompts";
 
+import { getAIConfig } from "./aiConfigManager";
+import { fetchRemoteAI } from "./aiUtils";
+
 /**
  * Advanced Resume Semantic Parser
  * Extracts structured data from raw OCR/PDF text using heuristics and patterns.
@@ -267,13 +270,36 @@ const parseListItems = (content, type) => {
  * AI-powered Resume Parser
  * Uses the WebGPU-accelerated LLM to extract structured data from raw text.
  */
-export const parseResumeWithAI = (text, onStatus) => {
+export const parseResumeWithAI = async (text, onStatus) => {
+  const config = getAIConfig();
+  const systemPrompt = RESUME_PARSER_PROMPT;
+  const userMessage = `Raw Resume Text:\n${text}`;
+
+  // If user has configured Remote AI, use that instead of local worker
+  if (config.useRemote && config.key) {
+    if (onStatus) onStatus("Analyzing with Remote AI...");
+    const response = await fetchRemoteAI(
+      [{ role: "user", content: userMessage }],
+      config,
+      systemPrompt,
+    );
+
+    // Remote AI doesn't stream here (it's a single call), so we wait for full response
+    let fullText = "";
+    const reader = response.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      fullText += value;
+    }
+    return processAIResponse(fullText);
+  }
+
+  // Otherwise, use local worker
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL("./aiWorker.js", import.meta.url), {
       type: "module",
     });
-
-    const systemPrompt = RESUME_PARSER_PROMPT;
 
     worker.onmessage = (event) => {
       const { type, content, error, progress } = event.data;
@@ -282,78 +308,22 @@ export const parseResumeWithAI = (text, onStatus) => {
         if (onStatus)
           onStatus(`Downloading AI Model: ${Math.round(progress.progress)}%`);
       } else if (type === "ready") {
-        if (onStatus) onStatus("Analyzing with AI...");
+        if (onStatus) onStatus("Analyzing with Local AI...");
         worker.postMessage({
           type: "generate",
-          model_id: AI_CONFIG.MODEL_ID,
+          model_id: config.localModelId || AI_CONFIG.MODEL_ID,
           system_prompt: systemPrompt,
-          messages: [{ role: "user", content: `Raw Resume Text:\n${text}` }],
+          messages: [{ role: "user", content: userMessage }],
           params: { max_new_tokens: 2048, temperature: 0.1 },
         });
       } else if (type === "complete") {
         try {
-          // Clean up response (sometimes LLMs wrap in code blocks)
-          let jsonStr = content.trim();
-          if (jsonStr.includes("```json")) {
-            jsonStr = jsonStr.split("```json")[1].split("```")[0].trim();
-          } else if (jsonStr.includes("```")) {
-            jsonStr = jsonStr.split("```")[1].split("```")[0].trim();
-          }
-          // console.log("### ai content ###\n", content);
-          const parsed = JSON.parse(jsonStr);
-
-          // Post-process: Add UUIDs and handle structure with strict length limits
-          const processed = {
-            ...parsed,
-            name: parsed.fullName || parsed.name || "",
-            profession: parsed.profession || "",
-            email: parsed.email || "",
-            phone: parsed.phone || "",
-            location: parsed.location || "",
-            linkedin: parsed.linkedin || "",
-            portfolio: parsed.portfolioUrl || "",
-            summary: parsed.summary || "",
-            experience: (parsed.workExperience || [])
-              .slice(0, 4)
-              .map((exp) => ({
-                ...exp,
-                id: uuidv4(),
-                bullets: (exp.bullets || []).slice(0, 6), // Also limit bullets per job
-              })),
-            projects: (parsed.projects || []).slice(0, 5).map((proj) => ({
-              ...proj,
-              id: uuidv4(),
-            })),
-            education: (parsed.education || []).slice(0, 2).map((edu) => ({
-              ...edu,
-              id: uuidv4(),
-            })),
-            skills: (parsed.skills || []).slice(0, 10).map((skill) => ({
-              id: uuidv4(),
-              name: typeof skill === "string" ? skill : skill.name || "",
-            })),
-            certifications: (parsed.certifications || [])
-              .slice(0, 2)
-              .map((cert) => ({
-                ...cert,
-                id: uuidv4(),
-              })),
-          };
-          // console.log(
-          //   "%cAI Extraction Result:",
-          //   "color: #40e0d0; font-weight: bold; font-size: 14px;",
-          // );
-          // console.log(processed);
+          const processed = processAIResponse(content);
           worker.terminate();
           resolve(processed);
         } catch (e) {
-          console.error("Failed to parse AI response:", e, content);
           worker.terminate();
-          reject(
-            new Error(
-              "AI generated invalid JSON. Falling back to heuristic parser.",
-            ),
-          );
+          reject(e);
         }
       } else if (type === "error") {
         worker.terminate();
@@ -361,6 +331,55 @@ export const parseResumeWithAI = (text, onStatus) => {
       }
     };
 
-    worker.postMessage({ type: "load", model_id: AI_CONFIG.MODEL_ID });
+    worker.postMessage({
+      type: "load",
+      model_id: config.localModelId || AI_CONFIG.MODEL_ID,
+    });
   });
+};
+
+const processAIResponse = (content) => {
+  // Clean up response (sometimes LLMs wrap in code blocks)
+  let jsonStr = content.trim();
+  if (jsonStr.includes("```json")) {
+    jsonStr = jsonStr.split("```json")[1].split("```")[0].trim();
+  } else if (jsonStr.includes("```")) {
+    jsonStr = jsonStr.split("```")[1].split("```")[0].trim();
+  }
+
+  const parsed = JSON.parse(jsonStr);
+
+  // Post-process: Add UUIDs and handle structure with strict length limits
+  return {
+    ...parsed,
+    name: parsed.fullName || parsed.name || "",
+    profession: parsed.profession || "",
+    email: parsed.email || "",
+    phone: parsed.phone || "",
+    location: parsed.location || "",
+    linkedin: parsed.linkedin || "",
+    portfolio: parsed.portfolioUrl || "",
+    summary: parsed.summary || "",
+    experience: (parsed.workExperience || []).slice(0, 4).map((exp) => ({
+      ...exp,
+      id: uuidv4(),
+      bullets: (exp.bullets || []).slice(0, 6),
+    })),
+    projects: (parsed.projects || []).slice(0, 5).map((proj) => ({
+      ...proj,
+      id: uuidv4(),
+    })),
+    education: (parsed.education || []).slice(0, 2).map((edu) => ({
+      ...edu,
+      id: uuidv4(),
+    })),
+    skills: (parsed.skills || []).slice(0, 10).map((skill) => ({
+      id: uuidv4(),
+      name: typeof skill === "string" ? skill : skill.name || "",
+    })),
+    certifications: (parsed.certifications || []).slice(0, 2).map((cert) => ({
+      ...cert,
+      id: uuidv4(),
+    })),
+  };
 };

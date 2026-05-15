@@ -4,36 +4,29 @@ import { AIChatWindow } from "./AIChatWindow";
 import { AI_CONFIG } from "../../constants/aiConfig";
 import { SUMMARIZER_PROMPT } from "../../constants/prompts";
 import { minifyResumeData, fetchRemoteAI } from "../../utils/aiUtils";
+import { getAIConfig, saveAIConfig } from "../../utils/aiConfigManager";
 import "../../styles/ai-chatbot.css";
 
-export function AIContainer({ resumeData }) {
+const INITIAL_MESSAGES = [
+  {
+    role: "ai",
+    content: "Hello! I'm your AI career assistant. How can I help you with your resume today?",
+  },
+];
+
+export function AIContainer({ resumeData, showToast }) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState("idle"); // idle, downloading, loading, ready, error
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [chatCount, setChatCount] = useState(0);
-  const [messages, setMessages] = useState([
-    {
-      role: "ai",
-      content:
-        "Hello! I'm your AI career assistant. How can I help you with your resume today?",
-    },
-  ]);
+  const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [isGenerating, setIsGenerating] = useState(false);
 
   // API Config for remote AI
-  const [apiConfig, setApiConfig] = useState(() => {
-    const saved = localStorage.getItem("ai_api_config");
-    return saved ? JSON.parse(saved) : {
-      useRemote: false,
-      url: "https://api.openai.com/v1/chat/completions",
-      key: "",
-      model: "gpt-3.5-turbo",
-      localModelId: AI_CONFIG.MODEL_ID
-    };
-  });
+  const [apiConfig, setApiConfig] = useState(getAIConfig());
 
   useEffect(() => {
-    localStorage.setItem("ai_api_config", JSON.stringify(apiConfig));
+    saveAIConfig(apiConfig);
   }, [apiConfig]);
 
   const generationStartTime = useRef(null);
@@ -60,7 +53,7 @@ export function AIContainer({ resumeData }) {
 
     worker.current.onerror = (e) => {
       console.error("### AI Worker Global Error ###", e);
-      alert("🚨 AI Assistant Crashed: " + (e.message || "Unknown error (likely memory limit)"));
+      showToast("🚨 AI Assistant Crashed: " + (e.message || "Unknown error (likely memory limit)"), "error");
       setIsGenerating(false);
       setStatus("error");
     };
@@ -149,34 +142,60 @@ export function AIContainer({ resumeData }) {
     }
   }, [apiConfig.localModelId]);
 
-  // Initial Worker Setup
+  // Initial Worker Setup & Re-init on mode switch/model change
   useEffect(() => {
-    initWorker();
+    // 1. Handle Termination & Reset when switching modes or models
+    if (worker.current) {
+      const isSwitchingToRemote = apiConfig.useRemote;
+      // If we are already in Local AI, check if the model ID has changed
+      // (The dependency array will trigger this useEffect on ID change)
+      
+      // Check if the current worker's model differs from the target
+      // We'll trust the dependency array but we need to terminate old worker
+      console.log("### Mode/Model Change: Terminating Previous Worker ###");
+      worker.current.terminate();
+      worker.current = null;
+      setStatus("idle");
+      setMessages(INITIAL_MESSAGES);
+    }
 
-    const bgTimer = setTimeout(() => {
-      if (statusRef.current === "idle") {
+    // 2. Initialize if needed
+    // Only auto-download if Local AI is selected AND (auto-download is enabled OR chat is open)
+    if (!apiConfig.useRemote && (!apiConfig.disableAutoDownload || isOpen)) {
+      if (!worker.current) {
+        initWorker();
+        setMessages(INITIAL_MESSAGES);
+      }
+    }
+    
+    return () => {
+      // Termination handled by the logic above and the cleanup effect
+    };
+  }, [apiConfig.localModelId, apiConfig.disableAutoDownload, isOpen, apiConfig.useRemote]);
+
+  // Handle manual load trigger when chat opens
+  useEffect(() => {
+    if (isOpen && !apiConfig.useRemote) {
+      if (!worker.current) {
+        initWorker();
+      } else if (status === "idle") {
         worker.current.postMessage({
           type: "load",
           model_id: apiConfig.localModelId,
         });
       }
-    }, 5000);
+    }
+  }, [isOpen, status, apiConfig.useRemote]);
 
+  // Clean up on unmount
+  useEffect(() => {
     return () => {
-      clearTimeout(bgTimer);
-      worker.current?.terminate();
+      if (worker.current) {
+        worker.current.terminate();
+        worker.current = null;
+      }
     };
   }, []);
-
-  // Trigger load immediately when chat is opened if status is idle
-  useEffect(() => {
-    if (isOpen && status === "idle") {
-      worker.current.postMessage({
-        type: "load",
-        model_id: apiConfig.localModelId,
-      });
-    }
-  }, [isOpen]);
 
   const handleDownload = () => {
     setStatus("downloading");
@@ -230,7 +249,7 @@ export function AIContainer({ resumeData }) {
         setChatCount((prev) => prev + 1);
       } catch (error) {
         console.error("Remote AI Error:", error);
-        alert("🚨 Remote AI Error: " + error.message);
+        showToast("Remote AI Error: " + error.message, "error");
         setIsGenerating(false);
       }
       return;
@@ -274,6 +293,7 @@ export function AIContainer({ resumeData }) {
           isGenerating={isGenerating}
           apiConfig={apiConfig}
           setApiConfig={setApiConfig}
+          showToast={showToast}
         />
       )}
       <AIChatButton
