@@ -25,11 +25,23 @@ class TextGenerationPipeline {
   static async getInstance(model_id, progress_callback = null) {
     if (this.instance === null || this.model_id !== model_id) {
       this.model_id = model_id;
-      this.instance = await pipeline("text-generation", model_id, {
-        progress_callback,
-        device: "webgpu",
-        dtype: "q4f16",
-      });
+      try {
+        console.log("### Attempting WebGPU Initialization...");
+        this.instance = await pipeline("text-generation", model_id, {
+          progress_callback,
+          device: "webgpu",
+          dtype: "q4f16",
+        });
+        console.log("### WebGPU Pipeline Ready");
+      } catch (e) {
+        console.warn("### WebGPU failed, falling back to WASM/CPU:", e);
+        this.instance = await pipeline("text-generation", model_id, {
+          progress_callback,
+          device: "wasm",
+          dtype: "fp32", // Safe fallback for WASM
+        });
+        console.log("### WASM Pipeline Ready");
+      }
     }
     return this.instance;
   }
