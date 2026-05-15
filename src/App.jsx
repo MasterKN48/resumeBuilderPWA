@@ -16,7 +16,7 @@ import {
 } from "./components/shared/TemplateNav";
 import { InstallBanner } from "./components/shared/InstallBanner";
 import { SectionRenderer } from "./components/SectionRenderer";
-import { FileText } from "lucide-preact";
+import { FileText, Github, RefreshCw } from "lucide-preact";
 import { Toast } from "./components/shared/Toast";
 
 // AI Component
@@ -42,7 +42,11 @@ export default function App() {
     const handleError = (event) => {
       const msg = event.error?.message || event.message || "Unknown error";
       console.error("Global Error Caught:", event);
-      if (msg.includes("out of memory") || msg.includes("Worker") || msg.includes("GPU")) {
+      if (
+        msg.includes("out of memory") ||
+        msg.includes("Worker") ||
+        msg.includes("GPU")
+      ) {
         showToast("Stability Alert: " + msg, "error");
       }
     };
@@ -113,9 +117,33 @@ export default function App() {
     handleDrop,
   } = useLayoutManager(data, setData);
 
-  const { showInstallBanner, handleInstallClick, dismissInstall } = usePWA(showToast);
+  const { showInstallBanner, handleInstallClick, dismissInstall } =
+    usePWA(showToast);
   const { scale, viewportHeight } = useScale(template, data, resumeRefs);
   const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe(setTemplate);
+
+  const handleHardRefresh = async () => {
+    showToast("Checking for updates...", "info");
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (let registration of registrations) {
+        await registration.unregister();
+      }
+    }
+    // Clear other caches if possible
+    if ("caches" in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map((name) => {
+          // Don't clear transformers-cache as it's the model cache
+          if (!name.includes("transformers-cache")) {
+            return caches.delete(name);
+          }
+        }),
+      );
+    }
+    window.location.reload();
+  };
 
   // Request Persistent Storage
   useEffect(() => {
@@ -244,7 +272,10 @@ export default function App() {
       // );
     } catch (error) {
       console.error("Critical parsing error:", error);
-      showToast("Error parsing PDF. Please try again or use a different file.", "error");
+      showToast(
+        "Error parsing PDF. Please try again or use a different file.",
+        "error",
+      );
     } finally {
       setTimeout(() => {
         setIsParsing(false);
@@ -283,6 +314,24 @@ export default function App() {
 
   return (
     <>
+      <div className="top-right-nav hide-print">
+        <button
+          className="nav-icon-btn"
+          onClick={handleHardRefresh}
+          data-tooltip="Force Update App"
+        >
+          <RefreshCw size={18} />
+        </button>
+        <a
+          href="https://github.com/MasterKN48/resumeBuilderPWA"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="nav-icon-btn"
+          data-tooltip="Source Code"
+        >
+          <Github size={18} />
+        </a>
+      </div>
       <div className="perspective-grid hide-print"></div>
       <FloatingBar
         isEditMode={isEditMode}
