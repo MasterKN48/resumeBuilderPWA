@@ -6,6 +6,14 @@ import {
   TextStreamer,
 } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0";
 
+// Global error handler for the worker itself
+self.onerror = (message, source, lineno, colno, error) => {
+  console.error("### AI Worker Internal Error ###", { message, lineno, error });
+};
+
+console.log("### AI Worker Script Loaded ###");
+console.log("### WebGPU Support Check:", !!navigator.gpu);
+
 // Configure environment for WebGPU and custom cache
 env.allowLocalModels = false;
 env.useBrowserCache = true;
@@ -44,6 +52,8 @@ self.addEventListener("message", async (event) => {
   } else if (type === "generate") {
     try {
       const { system_prompt } = event.data;
+      console.log("### AI Starting Generation ###", { model_id, messageCount: messages.length });
+      
       const generator = await TextGenerationPipeline.getInstance(model_id);
 
       const streamer = new TextStreamer(generator.tokenizer, {

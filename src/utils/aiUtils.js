@@ -113,3 +113,71 @@ export function formatMarkdown(text) {
 
   return processedLines.join("");
 }
+
+/**
+ * Fetches response from an OpenAI-compatible API.
+ * Supports streaming and standard chat completion format.
+ */
+export async function fetchRemoteAI(messages, config, onStream) {
+  const { url, key, model } = config;
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${key}`
+    },
+    body: JSON.stringify({
+      model: model || "gpt-3.5-turbo",
+      messages,
+      stream: !!onStream
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API Error: ${response.status}`);
+  }
+
+  if (!onStream) {
+    const data = await response.json();
+    return data.choices[0].message.content;
+  }
+
+  // Handle streaming
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullContent = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n");
+      
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const dataStr = line.substring(6).trim();
+          if (dataStr === "[DONE]") continue;
+          
+          try {
+            const json = JSON.parse(dataStr);
+            const content = json.choices[0]?.delta?.content || "";
+            if (content) {
+              fullContent += content;
+              onStream(content);
+            }
+          } catch (e) {
+            // Ignore partial or invalid JSON
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  
+  return fullContent;
+}

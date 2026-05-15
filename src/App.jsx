@@ -26,6 +26,32 @@ import { ClassicTemplate } from "./components/templates/ClassicTemplate";
 import { ModernTemplate } from "./components/templates/ModernTemplate";
 
 export default function App() {
+  useEffect(() => {
+    const handleError = (event) => {
+      const msg = event.error?.message || event.message || "Unknown error";
+      console.error("Global Error Caught:", event);
+      if (msg.includes("out of memory") || msg.includes("Worker") || msg.includes("GPU")) {
+        alert("🚨 App Error: " + msg);
+      }
+    };
+
+    const handleRejection = (event) => {
+      console.error("Unhandled Rejection:", event.reason);
+      const msg = event.reason?.message || String(event.reason);
+      if (msg.includes("GPU") || msg.includes("memory")) {
+        alert("🚨 AI Error: " + msg);
+      }
+    };
+
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleRejection);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+      window.removeEventListener("unhandledrejection", handleRejection);
+    };
+  }, []);
+
   const resumeRefs = useRef({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [isParsing, setIsParsing] = useState(false);

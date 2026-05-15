@@ -1,4 +1,4 @@
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import {
   Palette,
   RefreshCw,
@@ -11,7 +11,6 @@ import {
   Maximize,
   Type,
   Shield,
-  Trash2,
   Zap,
   X,
 } from "lucide-preact";
@@ -33,24 +32,6 @@ export const FloatingBar = ({
   setFontScale,
   handlePdfUpload,
 }) => {
-  const handleClearAICache = async () => {
-    if (confirm("Are you sure you want to delete the AI model cache? You will need to re-download the ~350MB model to use Pocket AI again.")) {
-      try {
-        const cacheNames = await caches.keys();
-        for (const name of cacheNames) {
-          if (name.includes('transformers-cache')) {
-            await caches.delete(name);
-          }
-        }
-        alert("AI Model cache cleared successfully.");
-        window.location.reload();
-      } catch (error) {
-        console.error("Error clearing AI cache:", error);
-        alert("Failed to clear AI cache. You can manually clear it in Browser Settings > Storage.");
-      }
-    }
-  };
-
   return (
     <div className="floating-bar hide-print">
       <input
@@ -266,26 +247,6 @@ export const FloatingBar = ({
                     Runs <strong>100% offline</strong> on your device using WebGPU. 
                     Your data never leaves your browser, ensuring absolute privacy with high accuracy.
                   </p>
-                  <button 
-                    onClick={handleClearAICache}
-                    style={{
-                      marginTop: '8px',
-                      padding: '4px 10px',
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      color: '#ef4444',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      borderRadius: '8px',
-                      fontSize: '10px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Trash2 size={12} />
-                    Clear AI Cache
-                  </button>
                 </div>
               </div>
             </div>
