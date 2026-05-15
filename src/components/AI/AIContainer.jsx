@@ -35,6 +35,64 @@ export function AIContainer({ resumeData, showToast }) {
   const pendingMessageRef = useRef(null);
   const worker = useRef(null);
 
+  // Streaming Buffer Logic
+  const streamingBuffer = useRef("");
+  const isProcessingBuffer = useRef(false);
+  const workerDone = useRef(false);
+  const generationStats = useRef({ duration: "0s" });
+
+  const processBuffer = () => {
+    if (isProcessingBuffer.current) return;
+    isProcessingBuffer.current = true;
+
+    const tick = () => {
+      if (streamingBuffer.current.length > 0) {
+        // Reduced speed: 1-2 characters per tick for a very deliberate pace
+        const charCount = streamingBuffer.current.length > 150 ? 4 : 1;
+        const chunk = streamingBuffer.current.slice(0, charCount);
+        streamingBuffer.current = streamingBuffer.current.slice(charCount);
+
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.role === "ai") {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              ...last,
+              content: last.content + chunk,
+            };
+            return updated;
+          }
+          return [...prev, { role: "ai", content: chunk }];
+        });
+
+        setTimeout(tick, 60); // 60ms for a very calm, readable pace
+      } else {
+        isProcessingBuffer.current = false;
+        if (workerDone.current) {
+          finalizeGeneration();
+        }
+      }
+    };
+    tick();
+  };
+
+  const finalizeGeneration = () => {
+    setMessages((prev) => {
+      const updated = [...prev];
+      const last = updated[updated.length - 1];
+      if (last && last.role === "ai") {
+        updated[updated.length - 1] = { 
+          ...last, 
+          duration: generationStats.current.duration 
+        };
+      }
+      return updated;
+    });
+    setIsGenerating(false);
+    setChatCount((prev) => prev + 1);
+    workerDone.current = false;
+  };
+
   // Sync refs with state/props
   useEffect(() => {
     statusRef.current = status;
@@ -70,18 +128,8 @@ export function AIContainer({ resumeData, showToast }) {
           setStatus("ready");
           break;
         case "partial_result":
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            if (last && last.role === "ai") {
-              const updated = [...prev];
-              updated[updated.length - 1] = {
-                ...last,
-                content: last.content + content,
-              };
-              return updated;
-            }
-            return [...prev, { role: "ai", content }];
-          });
+          streamingBuffer.current += content;
+          processBuffer();
           break;
         case "summarize_complete":
           const pendingMsg = pendingMessageRef.current;
@@ -105,17 +153,11 @@ export function AIContainer({ resumeData, showToast }) {
 
         case "complete":
           const duration = ((Date.now() - generationStartTime.current) / 1000).toFixed(1);
-          setMessages((prev) => {
-            const updated = [...prev];
-            const last = updated[updated.length - 1];
-            if (last && last.role === "ai") {
-              updated[updated.length - 1] = { ...last, content, duration: `${duration}s` };
-              return updated;
-            }
-            return [...prev, { role: "ai", content, duration: `${duration}s` }];
-          });
-          setIsGenerating(false);
-          setChatCount((prev) => prev + 1);
+          generationStats.current = { duration: `${duration}s` };
+          workerDone.current = true;
+          if (!isProcessingBuffer.current && streamingBuffer.current.length === 0) {
+            finalizeGeneration();
+          }
           break;
         case "error":
           console.error("AI Worker Error:", error);
@@ -227,26 +269,16 @@ export function AIContainer({ resumeData, showToast }) {
         setMessages(prev => [...prev, { role: "ai", content: "" }]);
 
         await fetchRemoteAI(finalMessages, apiConfig, (chunk) => {
-          setMessages((prev) => {
-            const updated = [...prev];
-            const last = updated[updated.length - 1];
-            if (last && last.role === "ai") {
-              updated[updated.length - 1] = { ...last, content: last.content + chunk };
-              return updated;
-            }
-            return updated;
-          });
+          streamingBuffer.current += chunk;
+          processBuffer();
         });
 
         const duration = ((Date.now() - generationStartTime.current) / 1000).toFixed(1);
-        setMessages(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1].duration = `${duration}s`;
-          return updated;
-        });
-        
-        setIsGenerating(false);
-        setChatCount((prev) => prev + 1);
+        generationStats.current = { duration: `${duration}s` };
+        workerDone.current = true;
+        if (!isProcessingBuffer.current && streamingBuffer.current.length === 0) {
+          finalizeGeneration();
+        }
       } catch (error) {
         console.error("Remote AI Error:", error);
         showToast("Remote AI Error: " + error.message, "error");

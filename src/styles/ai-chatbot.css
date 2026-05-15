@@ -577,6 +577,35 @@
   border-bottom-left-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: height 0.3s ease;
+  position: relative;
+  /* Prevent font-weight jittering during streaming */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.chat-message.ai.streaming {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.1);
+  /* The FlowToken Fade-In Effect: 
+     Enhanced gradient to create a "blur/fade" effect at the leading edge */
+  mask-image: linear-gradient(to bottom, 
+    black 0%, 
+    black calc(100% - 50px), 
+    rgba(0,0,0,0.5) calc(100% - 25px),
+    transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, 
+    black 0%, 
+    black calc(100% - 50px), 
+    rgba(0,0,0,0.5) calc(100% - 25px),
+    transparent 100%);
+  mask-size: 100% 100%;
+}
+
+.fade-in-text {
+  /* Removed animation from container to prevent "flashing" on every chunk */
+  opacity: 1;
 }
 
 .ai-message-duration {

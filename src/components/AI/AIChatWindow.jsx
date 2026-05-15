@@ -109,7 +109,7 @@ export function AIChatWindow({
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
   useEffect(() => {
@@ -416,10 +416,10 @@ export function AIChatWindow({
             {messages
               .filter((m) => m.role !== "system")
               .map((msg, i) => (
-                <div key={i} className={`chat-message ${msg.role}`}>
+                <div key={i} className={`chat-message ${msg.role} ${isGenerating && i === messages.length - 1 ? 'streaming' : ''}`}>
                   {msg.role === "ai" ? (
                     <div
-                      className="ai-md-content"
+                      className="ai-md-content fade-in-text"
                       dangerouslySetInnerHTML={{
                         __html: formatMarkdown(msg.content),
                       }}
@@ -438,7 +438,7 @@ export function AIChatWindow({
                 </div>
               ))}
             {isGenerating && (
-              <div className="chat-message ai">
+              <div className="chat-message ai streaming-placeholder">
                 <Loader2 size={16} className="animate-spin" />
               </div>
             )}
